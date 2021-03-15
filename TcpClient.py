@@ -1,8 +1,11 @@
 import socket 
 import threading 
 from Decoder import Decoder
+import pyModeS as pms
 
-ALL_MESSAGES = []
+ADSB_MESSAGES = {}
+DF_11 = {}
+MODE_AC = {}
 
 
 class TcpClient():
@@ -23,7 +26,7 @@ class TcpClient():
         
         while True: 
             data = self.socket.recv(self.buffersize)
-            print(f"[DATA PACKET] ------ {host} ----- {thread_id} \n")
+            print(f"\n[DATA PACKET] ------ {host} ----- {thread_id}")
             # print(format(data))
             # print("\n")
             decoder = Decoder(data)
@@ -31,12 +34,51 @@ class TcpClient():
             messages_mlat = decoder.handle_messages()
             
             for msg in messages_mlat:
-                if msg[0] in ALL_MESSAGES:
-                    
-                    print(msg[0] + " " + ALL_MESSAGES[ALL_MESSAGES.index(msg[0])])
-                else: 
-                    print("Not in")
-                ALL_MESSAGES.append(msg[0])
+                df = pms.df(msg[0])
+                # ADS-B - Mode S Long 28 byte
+                if(df == 17):
+                    icao = pms.adsb.icao(msg[0])
+                    if msg[0] in ADSB_MESSAGES.keys():
+                        ADSB_MESSAGES[msg[0]][thread_id] = msg[1]
+                        print(f"{msg[0]} {ADSB_MESSAGES[msg[0]]}")
+                        # print(ALL_MESSAGES.keys())
+                    else: 
+                        ADSB_MESSAGES[msg[0]] = {}
+                        ADSB_MESSAGES[msg[0]][thread_id] = msg[1]
+                        ADSB_MESSAGES[msg[0]]["icao"] = icao
+                        print(f"{msg[0]} {ADSB_MESSAGES[msg[0]]}")
+                        
+                        
+                # All Call Reply - Mode S short 14 byte
+                elif(df == 11):
+                    icao = pms.adsb.icao(msg[0])
+                    if icao in DF_11.keys():
+                        DF_11[icao]["msg"] = msg[0]
+                        DF_11[icao][str(thread_id)+"x"+str(DF_11[icao]["id"] + 1)] = msg[1]
+                        DF_11[icao]["id"] = DF_11[icao]["id"] + 1
+                        print(f"{icao} {DF_11[icao]}")
+                        # print(ALL_MESSAGES.keys())
+                    else: 
+                        DF_11[icao] = {}
+                        DF_11[icao]["id"] = 0
+                        DF_11[icao]["msg"] = msg[0]
+                        DF_11[icao][str(thread_id)+"x"+str(DF_11[icao]["id"] + 1)] = msg[1]
+                        DF_11[icao]["id"] = DF_11[icao]["id"] + 1
+                        DF_11[icao]["icao"] = icao
+                        print(f"{icao} {DF_11[icao]}")
+                        
+                        
+                # # Mode A/C - 4 byte
+                # else: 
+                #     if msg[0] in MODE_AC.keys():
+                #         MODE_AC[msg[0]][thread_id] = msg[1]
+                #         print(f"{msg[0]} {MODE_AC[msg[0]]}")
+                #         # print(ALL_MESSAGES.keys())
+                #     else: 
+                #         MODE_AC[msg[0]] = {}
+                #         MODE_AC[msg[0]][thread_id] = msg[1]
+                #         MODE_AC[msg[0]]["icao"] = icao
+                #         print(f"{msg[0]} {MODE_AC[msg[0]]}")
             
     def handle_thread(self):
         
@@ -58,5 +100,5 @@ class TcpClient():
 
             print(f"[ACTIVE CONNECTIONS] {threading.activeCount()-1}")
             
-client = TcpClient(["192.168.30.27", "192.168.101.3"], 10004)
+client = TcpClient(["192.168.30.27", "192.168.101.3"], 10003)
 client.run()
