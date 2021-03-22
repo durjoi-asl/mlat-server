@@ -75,7 +75,7 @@ class Decoder:
             # if len(msg) not in [4, 14, 28]:
             #     continue
             
-            if len(msg) not in [14]:
+            if len(msg) not in [28, 14, 4]:
                 continue
             
             self.messages_mlat.append([msg, ts])
