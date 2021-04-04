@@ -4,6 +4,7 @@ from Decoder import Decoder
 import pyModeS as pms
 import decrypt
 import jsonHandler
+import time
 
 ADSB_MESSAGES = {}
 DF_11 = {}
@@ -61,7 +62,7 @@ class TcpClient():
                     # if msgTC in range(0,5):
                     #     jsonHandler.handleID(msg[0])
                     jsonHandler.handle_data(msg[0])
-                        
+                     # remove from production code
 
                     if msg[0] in ADSB_MESSAGES.keys():
                         ADSB_MESSAGES[msg[0]][thread_id] = msg[1]
@@ -72,6 +73,7 @@ class TcpClient():
                         ADSB_MESSAGES[msg[0]][thread_id] = msg[1]
                         ADSB_MESSAGES[msg[0]]["icao"] = icao
                         # print(f"{msg[0]} {ADSB_MESSAGES[msg[0]]}")
+                    
                         
                         
                 # All Call Reply - Mode S short 14 byte
@@ -91,7 +93,7 @@ class TcpClient():
                         DF_11[icao]["id"] = DF_11[icao]["id"] + 1
                         DF_11[icao]["icao"] = icao
                         # print(f"{icao} {DF_11[icao]}")
-                        
+                       
                         
                 # # Mode A/C - 4 byte
                 # else: 
@@ -104,6 +106,7 @@ class TcpClient():
                 #         MODE_AC[msg[0]][thread_id] = msg[1]
                 #         MODE_AC[msg[0]]["icao"] = icao
                 #         print(f"{msg[0]} {MODE_AC[msg[0]]}")
+            # time.sleep(3) 
             
     def handle_thread(self):
         

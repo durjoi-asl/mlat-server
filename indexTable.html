@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mode-S long position</title>
+</head>
+<body>
+    <table id="aircraft-table" class=" table table-striped">
+        <tr  class="bg-info">
+            <th>ICAO</th>
+            <th>lat</th>
+            <th>long</th>
+            <th>speed</th>
+            <th>altitude</th>
+            <th>Gnd-lat</th>
+            <th>Gnd-long</th>
+            <th>Gnd-speed</th>
+
+        </tr>
+    </table>
+</body>
+<script>
+    
+    
+    var myD = []
+    var myStr = ''
+    // const mySonJ = []
+    // fetch('http://localhost:8001').then(res => console.log(res))
+    // fetch('http://localhost:8001').then(res =>  res.json()).then(data => myD[0] = data)
+    
+    var ICAO_keys = []
+    const api_url = 'http://localhost:8001'
+
+    // async function make_key(data){
+    //     // ICAO_keys = keys(data);
+    //     console.log(data);
+    // }
+    async function getData(){
+            const response = await fetch(api_url);
+            const data = await response.json();
+            // console.log(data);
+            // console.log(data[702075]["identity"]);
+            this.ICAO_keys = Object.keys(data);
+
+            var table = document.getElementById("aircraft-table");
+
+            var data_length = ICAO_keys.length;
+
+            for(key in data){
+
+                var row = `<tr id=${key}> 
+                                <td >${key}</td>
+                                <td>${data[key]["flightInfo"][0]}</td>
+                                <td>${data[key]["flightInfo"][1]}</td>
+                                <td>${data[key]["flightInfo"][2]}</td>
+                                <td>${data[key]["flightInfo"][3]}</td>
+                                <td>${data[key]["gndInfo"][0]}</td>
+                                <td>${data[key]["gndInfo"][1]}</td>
+                                <td>${data[key]["gndInfo"][2]}</td>
+                           </tr>`
+                table.innerHTML += row
+            }
+            console.log("ICAO_keys")
+            console.log(ICAO_keys)
+            // console.log(keys(data)); 
+            // make_key(data);                                         ))
+            // keys(data)   
+            
+            return data;
+        }
+        async function updateData(){
+            const response = await fetch(api_url);
+            const data = await response.json();
+            // if key not in ICAO_keys then insert else update
+            // this.ICAO_keys = Object.keys(data);
+
+            var table = document.getElementById("aircraft-table");
+
+            var data_length = ICAO_keys.length;
+
+            for(key in data){
+
+                if (ICAO_keys.includes(key)) {
+                    let el = document.getElementById(key).cells;
+                    // console.log(el);
+                    el[1].innerHTML = data[key]["flightInfo"][0];
+                    el[2].innerHTML = data[key]["flightInfo"][1];
+                    el[3].innerHTML = data[key]["flightInfo"][2];
+                    el[4].innerHTML = data[key]["flightInfo"][3];
+                    el[5].innerHTML = data[key]["gndInfo"][0];
+                    el[6].innerHTML = data[key]["gndInfo"][1];
+                    el[7].innerHTML = data[key]["gndInfo"][2];
+
+                }else{
+                    // insert new
+                    ICAO_keys.push(key)
+                    var row = `<tr id=${key}> 
+                                <td >${key}</td>
+                                <td>${data[key]["flightInfo"][0]}</td>
+                                <td>${data[key]["flightInfo"][1]}</td>
+                                <td>${data[key]["flightInfo"][2]}</td>
+                                <td>${data[key]["flightInfo"][3]}</td>
+                                <td>${data[key]["gndInfo"][0]}</td>
+                                <td>${data[key]["gndInfo"][1]}</td>
+                                <td>${data[key]["gndInfo"][2]}</td>
+                           </tr>`
+                    table.innerHTML += row;
+                }
+            }
+            console.log("ICAO_keys");
+            console.log(ICAO_keys);
+            // console.log(keys(data)); 
+            // make_key(data);                                         ))
+            // keys(data)   
+            
+            return data;
+        }
+    getData();
+    setInterval(updateData, 2000);
+    // python3 -m http.server --bind=localhost
+
+</script>
+</html>

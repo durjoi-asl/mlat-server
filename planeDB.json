@@ -1,625 +1,286 @@
 {
-    "icao3": {
-        "identity": [
-            "catagory",
-            "callsignal"
-        ],
-        "inflight": true,
-        "inGround": true,
-        "flightInfo": [
-            "lat",
-            "long",
-            "speed",
-            "altitude"
-        ],
-        "gndInfo": [
-            "lat",
-            "long",
-            "speed"
-        ]
-    },
-    "8013FF": {
-        "identity": [
-            3,
-            "IGO6539_"
-        ],
+    "872F7E": {
+        "identity": {
+            "category": 5,
+            "callsign": "ANA9647_"
+        },
         "inflight": true,
         "inGround": false,
-        "flightInfo": [
-            49.45734,
-            5.62102,
-            null,
-            null
-        ],
+        "flightInfo": {
+            "lat": 23.45242,
+            "long": 93.573,
+            "speed": null,
+            "altitude": null,
+            "prevPos": {
+                "lat": 23.45246,
+                "long": 93.57402
+            },
+            "angle": -90.0
+        },
         "gndInfo": [
             null,
             null,
             null
         ]
     },
-    "484CBA": {
-        "identity": [
-            5,
-            "KLM843__"
-        ],
+    "7020A4": {
+        "identity": {
+            "category": 2,
+            "callsign": "BBC512__"
+        },
         "inflight": true,
         "inGround": false,
-        "flightInfo": [
-            52.90608,
-            4.515,
-            null,
-            null
-        ],
+        "flightInfo": {
+            "lat": 23.02075,
+            "long": 91.13898,
+            "speed": null,
+            "altitude": null,
+            "prevPos": {
+                "lat": 23.02027,
+                "long": 91.13948
+            },
+            "angle": -42.10873040411918
+        },
         "gndInfo": [
             null,
             null,
             null
         ]
     },
-    "7583EB": {
-        "identity": [
-            5,
-            "PAL8747_"
-        ],
+    "704458": {
+        "identity": {
+            "category": 0,
+            "callsign": "MMA621__"
+        },
         "inflight": true,
         "inGround": false,
-        "flightInfo": [
-            51.84746,
-            6.92354,
-            null,
-            null
-        ],
+        "flightInfo": {
+            "lat": 25.9599,
+            "long": 92.42095,
+            "speed": null,
+            "altitude": null,
+            "prevPos": {
+                "lat": 25.96302,
+                "long": 92.4181
+            },
+            "angle": 138.25722194070988
+        },
         "gndInfo": [
             null,
             null,
             null
         ]
     },
-    "899104": {
-        "identity": [
-            5,
-            "CAL5640_"
-        ],
+    "71BA07": {
+        "identity": {
+            "category": 5,
+            "callsign": "KAL481__"
+        },
         "inflight": true,
         "inGround": false,
-        "flightInfo": [
-            54.23103,
-            4.58868,
-            null,
-            null
-        ],
+        "flightInfo": {
+            "lat": 23.45549,
+            "long": 93.62669,
+            "speed": null,
+            "altitude": null,
+            "prevPos": {
+                "lat": 23.45554,
+                "long": 93.62799
+            },
+            "angle": -90.0
+        },
         "gndInfo": [
             null,
             null,
             null
         ]
     },
-    "800BCE": {
-        "identity": [
-            0,
-            "SEJ961__"
-        ],
+    "7020A5": {
+        "identity": {
+            "category": 2,
+            "callsign": "BBC433__"
+        },
         "inflight": true,
         "inGround": false,
-        "flightInfo": [
-            53.95848,
-            2.43261,
-            null,
-            null
-        ],
+        "flightInfo": {
+            "lat": 21.71741,
+            "long": 91.91732,
+            "speed": null,
+            "altitude": null,
+            "prevPos": {
+                "lat": 21.71885,
+                "long": 91.91706
+            },
+            "angle": 170.77011375638696
+        },
         "gndInfo": [
             null,
             null,
             null
         ]
     },
-    "78157F": {
-        "identity": [
-            5,
-            "CES7173_"
-        ],
+    "89620F": {
+        "identity": {
+            "category": 5,
+            "callsign": "UAE9854_"
+        },
         "inflight": true,
         "inGround": false,
-        "flightInfo": [
-            49.51124,
-            7.58264,
-            null,
-            null
-        ],
+        "flightInfo": {
+            "lat": 22.34303,
+            "long": 91.10682,
+            "speed": null,
+            "altitude": null,
+            "prevPos": {
+                "lat": 22.34317,
+                "long": 91.10557
+            },
+            "angle": 97.81529354688979
+        },
         "gndInfo": [
             null,
             null,
             null
         ]
     },
-    "80139E": {
-        "identity": [
-            3,
-            "VTI755__"
-        ],
+    "702092": {
+        "identity": {
+            "category": 3,
+            "callsign": "BBC615__"
+        },
         "inflight": true,
         "inGround": false,
-        "flightInfo": [
-            49.94078,
-            3.08597,
-            null,
-            null
-        ],
+        "flightInfo": {
+            "lat": 22.36211,
+            "long": 91.99702,
+            "speed": null,
+            "altitude": null,
+            "prevPos": {
+                "lat": 22.36188,
+                "long": 91.99727
+            },
+            "angle": -35.53767779094285
+        },
         "gndInfo": [
             null,
             null,
             null
         ]
     },
-    "8013AB": {
-        "identity": [
-            3,
-            "SEJ7226_"
-        ],
+    "70E077": {
+        "identity": {
+            "category": 0,
+            "callsign": "MKR9125_"
+        },
         "inflight": true,
         "inGround": false,
-        "flightInfo": [
-            51.59921,
-            3.58206,
-            null,
-            null
-        ],
+        "flightInfo": {
+            "lat": 22.3063,
+            "long": 91.76554,
+            "speed": null,
+            "altitude": null,
+            "prevPos": {
+                "lat": 22.30667,
+                "long": 91.76509
+            },
+            "angle": 125.9605171967423
+        },
         "gndInfo": [
             null,
             null,
             null
         ]
     },
-    "06A13A": {
-        "identity": [
-            5,
-            "QTR640__"
-        ],
+    "800D0F": {
+        "identity": {
+            "category": 3,
+            "callsign": "IGO2514_"
+        },
         "inflight": true,
         "inGround": false,
-        "flightInfo": [
-            53.94492,
-            4.90079,
-            null,
-            null
-        ],
+        "flightInfo": {
+            "lat": 24.1331,
+            "long": 92.02708,
+            "speed": null,
+            "altitude": null,
+            "prevPos": {
+                "lat": 24.13529,
+                "long": 92.02972
+            },
+            "angle": -130.97800982312452
+        },
         "gndInfo": [
             null,
             null,
             null
         ]
     },
-    "801403": {
-        "identity": [
-            3,
-            "IAD1983_"
-        ],
+    "76B4E9": {
+        "identity": {
+            "category": 0,
+            "callsign": "SLK411__"
+        },
         "inflight": true,
         "inGround": false,
-        "flightInfo": [
-            54.57738,
-            3.37361,
-            null,
-            null
-        ],
+        "flightInfo": {
+            "lat": 22.90561,
+            "long": 91.21821,
+            "speed": null,
+            "altitude": null,
+            "prevPos": {
+                "lat": 22.9064,
+                "long": 91.21689
+            },
+            "angle": 120.89988166519343
+        },
         "gndInfo": [
             null,
             null,
             null
         ]
     },
-    "800BFA": {
-        "identity": [
-            3,
-            "AIC896__"
-        ],
+    "7020A2": {
+        "identity": {
+            "category": 2,
+            "callsign": "UBG107__"
+        },
         "inflight": true,
         "inGround": false,
-        "flightInfo": [
-            54.06551,
-            -0.57498,
-            null,
-            null
-        ],
+        "flightInfo": {
+            "lat": 22.25821,
+            "long": 91.82358,
+            "speed": null,
+            "altitude": null,
+            "prevPos": {
+                "lat": 22.25858,
+                "long": 91.82403
+            },
+            "angle": -127.47617956025029
+        },
         "gndInfo": [
             null,
             null,
             null
         ]
     },
-    "800C52": {
-        "identity": [
-            2,
-            "VTBVV___"
-        ],
+    "040156": {
+        "identity": {
+            "category": 5,
+            "callsign": "ETH3671_"
+        },
         "inflight": true,
         "inGround": false,
-        "flightInfo": [
-            50.31171,
-            5.7864,
-            null,
-            null
-        ],
-        "gndInfo": [
-            null,
-            null,
-            null
-        ]
-    },
-    "80053F": {
-        "identity": [
-            3,
-            "AIC706__"
-        ],
-        "inflight": true,
-        "inGround": false,
-        "flightInfo": [
-            53.4223,
-            5.46797,
-            null,
-            null
-        ],
-        "gndInfo": [
-            null,
-            null,
-            null
-        ]
-    },
-    "800CE9": {
-        "identity": [
-            3,
-            "IGO445__"
-        ],
-        "inflight": true,
-        "inGround": false,
-        "flightInfo": [
-            50.69804,
-            3.6599,
-            null,
-            null
-        ],
-        "gndInfo": [
-            null,
-            null,
-            null
-        ]
-    },
-    "800CE8": {
-        "identity": [
-            0,
-            "VTI747__"
-        ],
-        "inflight": true,
-        "inGround": false,
-        "flightInfo": [
-            52.98683,
-            3.61328,
-            null,
-            null
-        ],
-        "gndInfo": [
-            null,
-            null,
-            null
-        ]
-    },
-    "800B11": {
-        "identity": [
-            3,
-            "IGO484__"
-        ],
-        "inflight": true,
-        "inGround": false,
-        "flightInfo": [
-            52.8571,
-            6.22818,
-            null,
-            null
-        ],
-        "gndInfo": [
-            null,
-            null,
-            null
-        ]
-    },
-    "800BB5": {
-        "identity": [
-            3,
-            "IGO6182_"
-        ],
-        "inflight": true,
-        "inGround": false,
-        "flightInfo": [
-            50.42655,
-            1.50156,
-            null,
-            null
-        ],
-        "gndInfo": [
-            null,
-            null,
-            null
-        ]
-    },
-    "06A1E6": {
-        "identity": [
-            5,
-            "QTR8407_"
-        ],
-        "inflight": true,
-        "inGround": false,
-        "flightInfo": [
-            52.8063,
-            7.42943,
-            null,
-            null
-        ],
-        "gndInfo": [
-            null,
-            null,
-            null
-        ]
-    },
-    "800BC1": {
-        "identity": [
-            3,
-            "IGO2157_"
-        ],
-        "inflight": true,
-        "inGround": false,
-        "flightInfo": [
-            50.87256,
-            -0.83084,
-            null,
-            null
-        ],
-        "gndInfo": [
-            null,
-            null,
-            null
-        ]
-    },
-    "800D8B": {
-        "identity": [
-            0,
-            "IAD926__"
-        ],
-        "inflight": true,
-        "inGround": false,
-        "flightInfo": [
-            49.49075,
-            8.18229,
-            null,
-            null
-        ],
-        "gndInfo": [
-            null,
-            null,
-            null
-        ]
-    },
-    "800C1F": {
-        "identity": [
-            3,
-            "IGO376__"
-        ],
-        "inflight": true,
-        "inGround": false,
-        "flightInfo": [
-            53.23773,
-            3.02689,
-            null,
-            null
-        ],
-        "gndInfo": [
-            null,
-            null,
-            null
-        ]
-    },
-    "7813BD": {
-        "identity": [
-            5,
-            "CSN8139_"
-        ],
-        "inflight": true,
-        "inGround": false,
-        "flightInfo": [
-            54.40365,
-            5.36457,
-            null,
-            null
-        ],
-        "gndInfo": [
-            null,
-            null,
-            null
-        ]
-    },
-    "7BD01B": {
-        "identity": [
-            4,
-            "HYT9067_"
-        ],
-        "inflight": true,
-        "inGround": false,
-        "flightInfo": [
-            52.41792,
-            2.07939,
-            null,
-            null
-        ],
-        "gndInfo": [
-            null,
-            null,
-            null
-        ]
-    },
-    "800B63": {
-        "identity": [
-            3,
-            "AIC894__"
-        ],
-        "inflight": true,
-        "inGround": false,
-        "flightInfo": [
-            50.28108,
-            5.31746,
-            null,
-            null
-        ],
-        "gndInfo": [
-            null,
-            null,
-            null
-        ]
-    },
-    "800D71": {
-        "identity": [
-            0,
-            "SEJ251__"
-        ],
-        "inflight": true,
-        "inGround": false,
-        "flightInfo": [
-            49.85664,
-            8.51404,
-            null,
-            null
-        ],
-        "gndInfo": [
-            null,
-            null,
-            null
-        ]
-    },
-    "800DA5": {
-        "identity": [
-            0,
-            "SEJ130__"
-        ],
-        "inflight": true,
-        "inGround": false,
-        "flightInfo": [
-            54.4259,
-            8.02793,
-            null,
-            null
-        ],
-        "gndInfo": [
-            null,
-            null,
-            null
-        ]
-    },
-    "780A27": {
-        "identity": [
-            0,
-            "HKC9457_"
-        ],
-        "inflight": true,
-        "inGround": false,
-        "flightInfo": [
-            52.06558,
-            4.47914,
-            null,
-            null
-        ],
-        "gndInfo": [
-            null,
-            null,
-            null
-        ]
-    },
-    "780A28": {
-        "identity": [
-            5,
-            "CPA3117_"
-        ],
-        "inflight": true,
-        "inGround": false,
-        "flightInfo": [
-            52.52051,
-            2.9197,
-            null,
-            null
-        ],
-        "gndInfo": [
-            null,
-            null,
-            null
-        ]
-    },
-    "7BD009": {
-        "identity": [
-            0,
-            "CSS7185_"
-        ],
-        "inflight": true,
-        "inGround": false,
-        "flightInfo": [
-            53.06206,
-            1.08459,
-            null,
-            null
-        ],
-        "gndInfo": [
-            null,
-            null,
-            null
-        ]
-    },
-    "7335A9": {
-        "identity": [
-            0,
-            "IRM081__"
-        ],
-        "inflight": true,
-        "inGround": false,
-        "flightInfo": [
-            53.49156,
-            2.53227,
-            null,
-            null
-        ],
-        "gndInfo": [
-            null,
-            null,
-            null
-        ]
-    },
-    "8013E7": {
-        "identity": [
-            3,
-            "IGO862__"
-        ],
-        "inflight": true,
-        "inGround": false,
-        "flightInfo": [
-            53.33876,
-            9.05925,
-            null,
-            null
-        ],
-        "gndInfo": [
-            null,
-            null,
-            null
-        ]
-    },
-    "702075": {
-        "identity": [
-            0,
-            "UBG143__"
-        ],
-        "inflight": false,
-        "inGround": false,
-        "flightInfo": [
-            null,
-            null,
-            null,
-            null
-        ],
+        "flightInfo": {
+            "lat": 22.32321,
+            "long": 91.26657,
+            "speed": null,
+            "altitude": null,
+            "prevPos": {
+                "lat": 22.32292,
+                "long": 91.26918
+            },
+            "angle": -83.05901657127183
+        },
         "gndInfo": [
             null,
             null,

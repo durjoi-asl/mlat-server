@@ -1,10 +1,11 @@
 import json
 import pyModeS as pms
 import decrypt
+import getAngle
 
 FILE_DIR = "planeDB.json"
-REF_LAT = 52.258
-REF_LON = 3.918
+REF_LAT = 23.83588
+REF_LON = 90.41611
 
 def getData(filename=FILE_DIR):
     '''
@@ -30,10 +31,21 @@ def createEntry(msg):
 
     temp = getData()
     newItem = {
-            "identity":[pms.adsb.category(msg),pms.adsb.callsign(msg)],
+            "identity":{
+                "category":pms.adsb.category(msg),
+                "callsign":pms.adsb.callsign(msg)
+                },
             "inflight": False,
             "inGround": False,
-            "flightInfo":[None,None,None,None],
+            "flightInfo": {
+                "lat":None,
+                "long": None,
+                "speed": None,
+                "altitude": None,
+                "prevPos": None,
+                "angle": 0
+
+            },
             "gndInfo": [None,None,None]
         }
     temp[pms.adsb.icao(msg)]=(newItem)
@@ -41,12 +53,25 @@ def createEntry(msg):
     write_json(temp)
  
 def firstEntry(msg):
+    '''
+    creates new entry for new icao address found
+    '''
     temp = {}
     newItem = {
-        "identity":[pms.adsb.category(msg),pms.adsb.callsign(msg)],
+        "identity":{
+                "category":pms.adsb.category(msg),
+                "callsign":pms.adsb.callsign(msg)
+                },
         "inflight": False,
         "inGround": False,
-        "flightInfo":[None,None,None,None],
+        "flightInfo": {
+                "lat":None,
+                "long": None,
+                "speed": None,
+                "altitude": None,
+                "prevPos": None,
+                "angle": 0
+        },
         "gndInfo": [None,None,None]
     }
     temp[pms.adsb.icao(msg)]=(newItem)
@@ -59,16 +84,16 @@ def handleID(msg):
     '''
 
     data = getData()
-    
-    if data != None or len(data) != 0 :
+    if data != None : #  just checking if there aren't any previous data  [or len(data) != 0 removed this as if data == null len check is not applicable]
         keys = data.keys()
         # print("keys: ", keys)
         if pms.adsb.icao(msg) in keys:
+            # if key exists don't make and entry
             # still check if we're missing some important thing or revise this later
             return
         else:
             createEntry(msg)
-    else:
+    else: # if data == None ie there is no entry in DB then just do firstEntry, also firstEntry and createEntry are different functions
         firstEntry(msg)
 
 
@@ -77,8 +102,8 @@ def updateAerealPos(msg):
     data = getData()
     temp = {}
     icaoN = pms.adsb.icao(msg)
-
-    if icaoN == None and icaoN not in data.keys():
+    print("#################################[data: ]", data)
+    if icaoN == None or data == None or icaoN not in data.keys() or data == None:
         return
     else : # if entry exists 
         for key in data.keys():
@@ -88,9 +113,9 @@ def updateAerealPos(msg):
                 print('updating aereal data')
                 print('eita data: ',data[key]["flightInfo"])
                 print('eita data: ',len(data[key]["flightInfo"]))
-                newArr = [lt, ln, data[key]["flightInfo"][2], data[key]["flightInfo"][3]]
+                # newArr = [lt, ln, data[key]["flightInfo"][2], data[key]["flightInfo"][3]]
                 # print('eita data: ',data[key]["flightInfo"][3])
-                print('eita data: ', newArr)
+                # print('eita data: ', newArr)
 
 
                 item = {
@@ -98,9 +123,35 @@ def updateAerealPos(msg):
                     "inflight": True,
                     "inGround": False,
                     # "flightInfo":[lt, ln, data[key]["flightInfo"][2], ["flightInfo"][3]],
-                    "flightInfo":newArr,
+                    "flightInfo":{
+                        "lat":lt,
+                        "long": ln,
+                        "speed": data[key]["flightInfo"]["speed"],
+                        "altitude": data[key]["flightInfo"]["altitude"],
+                        "prevPos": {
+                            "lat": data[key]["flightInfo"]["lat"],
+                            "long": data[key]["flightInfo"]["long"],
+                            }
+                        # "angle": getAngle.angleFromCoordinate(data[key]["flightInfo"]["lat"],data[key]["flightInfo"]["long"], lt, ln)
+                    },
                     "gndInfo": [None,None,None]
                 }
+                if data[key]["flightInfo"]["lat"] != None: # lat long info not available
+                    
+                    newAngle = getAngle.angleFromCoordinate(data[key]["flightInfo"]["lat"],data[key]["flightInfo"]["long"], lt, ln)
+                    print(data)
+                    prevAngle = data[key]["flightInfo"]["angle"]
+
+                    if data[key]["flightInfo"]["prevPos"] != None:
+                        if abs(data[key]["flightInfo"]["angle"]-newAngle) > 15:
+                            item["flightInfo"]["angle"] = newAngle
+                        else:
+                            item["flightInfo"]["angle"] = prevAngle
+                    else:
+                        item["flightInfo"]["angle"] = 0
+                else:
+                    item["flightInfo"]["angle"] = 0
+                    
                 temp[key] = item
         write_json(temp)
     # else: # if no entry exists do nothing
