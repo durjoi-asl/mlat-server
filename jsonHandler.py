@@ -2,10 +2,12 @@ import json
 import pyModeS as pms
 import decrypt
 import getAngle
+import datetime
 
 FILE_DIR = "planeDB.json"
 REF_LAT = 23.83588
 REF_LON = 90.41611
+TIME_FORMAT = "%m/%d/%Y, %H:%M:%S"
 
 def getData(filename=FILE_DIR):
     '''
@@ -31,6 +33,7 @@ def createEntry(msg):
 
     temp = getData()
     newItem = {
+            "icao": pms.adsb.icao(msg),
             "identity":{
                 "category":pms.adsb.category(msg),
                 "callsign":pms.adsb.callsign(msg)
@@ -46,9 +49,11 @@ def createEntry(msg):
                 "angle": 0
 
             },
-            "gndInfo": [None,None,None]
+            "gndInfo": [None,None,None],
+            "last_updated": datetime.datetime.now().strftime(TIME_FORMAT)
         }
-    temp[pms.adsb.icao(msg)]=(newItem)
+    # temp[pms.adsb.icao(msg)]=(newItem)
+    temp.append(newItem)
 
     write_json(temp)
  
@@ -56,8 +61,9 @@ def firstEntry(msg):
     '''
     creates new entry for new icao address found
     '''
-    temp = {}
+    temp = []
     newItem = {
+        "icao": pms.adsb.icao(msg),
         "identity":{
                 "category":pms.adsb.category(msg),
                 "callsign":pms.adsb.callsign(msg)
@@ -72,10 +78,26 @@ def firstEntry(msg):
                 "prevPos": None,
                 "angle": 0
         },
-        "gndInfo": [None,None,None]
+        "gndInfo": [None,None,None],
+        "last_updated": datetime.datetime.now().strftime(TIME_FORMAT)
     }
-    temp[pms.adsb.icao(msg)]=(newItem)
+    # temp[pms.adsb.icao(msg)]=(newItem)
+    temp.append(newItem)
     write_json(temp)
+
+def getKeys(data):
+    '''
+        returns keys from the json object it receives as parameter
+    '''
+    keys = []
+    for elem in enumerate(data):
+        keys.append(elem[1]["icao"])
+    return keys
+
+def getPlaneStateFromIcao(data, icao):
+    for elem in data:
+        if elem['icao']==icao:
+            return elem
 
 
 def handleID(msg):
@@ -85,7 +107,12 @@ def handleID(msg):
 
     data = getData()
     if data != None : #  just checking if there aren't any previous data  [or len(data) != 0 removed this as if data == null len check is not applicable]
-        keys = data.keys()
+        
+        # keys = data.keys()
+        keys = getKeys(data)
+
+
+
         # print("keys: ", keys)
         if pms.adsb.icao(msg) in keys:
             # if key exists don't make and entry
@@ -100,50 +127,54 @@ def handleID(msg):
 def updateAerealPos(msg):
     lt, ln = pms.adsb.airborne_position_with_ref(msg, REF_LAT, REF_LON)
     data = getData()
-    temp = {}
+    # temp = {}
+    temp = []
     icaoN = pms.adsb.icao(msg)
-    print("#################################[data: ]", data)
-    if icaoN == None or data == None or icaoN not in data.keys() or data == None:
+    # print("#################################[data: ]", data)
+    if icaoN == None or data == None or icaoN not in getKeys(data) or data == None:
         return
     else : # if entry exists 
-        for key in data.keys():
+        keys = getKeys(data)
+        for key in keys: #data.keys(): # check if icao already exists in saved json data
             if key != icaoN:
-                temp[key] = data[key]
+                # temp[key] = data[key]
+                temp.append(getPlaneStateFromIcao(data,key))
             else:
-                print('updating aereal data')
-                print('eita data: ',data[key]["flightInfo"])
-                print('eita data: ',len(data[key]["flightInfo"]))
+                # print('updating aereal data')
+                # print('eita data: ',data[key]["flightInfo"])
+                # print('eita data: ',len(data[key]["flightInfo"]))
                 # newArr = [lt, ln, data[key]["flightInfo"][2], data[key]["flightInfo"][3]]
                 # print('eita data: ',data[key]["flightInfo"][3])
                 # print('eita data: ', newArr)
 
-
                 item = {
-                    "identity":data[key]['identity'],
+                    "icao": key,
+                    "identity":getPlaneStateFromIcao(data,key)['identity'],
                     "inflight": True,
                     "inGround": False,
                     # "flightInfo":[lt, ln, data[key]["flightInfo"][2], ["flightInfo"][3]],
                     "flightInfo":{
                         "lat":lt,
                         "long": ln,
-                        "speed": data[key]["flightInfo"]["speed"],
-                        "altitude": data[key]["flightInfo"]["altitude"],
+                        "speed": getPlaneStateFromIcao(data,key)["flightInfo"]["speed"],
+                        "altitude": getPlaneStateFromIcao(data, key)["flightInfo"]["altitude"],
                         "prevPos": {
-                            "lat": data[key]["flightInfo"]["lat"],
-                            "long": data[key]["flightInfo"]["long"],
+                            "lat": getPlaneStateFromIcao(data, key)["flightInfo"]["lat"],
+                            "long": getPlaneStateFromIcao(data,key)["flightInfo"]["long"],
                             }
                         # "angle": getAngle.angleFromCoordinate(data[key]["flightInfo"]["lat"],data[key]["flightInfo"]["long"], lt, ln)
                     },
-                    "gndInfo": [None,None,None]
+                    "gndInfo": [None,None,None],
+                    "last_updated": datetime.datetime.now().strftime(TIME_FORMAT)
                 }
-                if data[key]["flightInfo"]["lat"] != None: # lat long info not available
+                if getPlaneStateFromIcao(data, key)["flightInfo"]["lat"] != None: # lat long info not available
                     
-                    newAngle = getAngle.angleFromCoordinate(data[key]["flightInfo"]["lat"],data[key]["flightInfo"]["long"], lt, ln)
+                    newAngle = getAngle.angleFromCoordinate(getPlaneStateFromIcao(data, key)["flightInfo"]["lat"],getPlaneStateFromIcao(data, key)["flightInfo"]["long"], lt, ln)
                     print(data)
-                    prevAngle = data[key]["flightInfo"]["angle"]
+                    prevAngle = getPlaneStateFromIcao(data, key)["flightInfo"]["angle"]
 
-                    if data[key]["flightInfo"]["prevPos"] != None:
-                        if abs(data[key]["flightInfo"]["angle"]-newAngle) > 15:
+                    if getPlaneStateFromIcao(data, key)["flightInfo"]["prevPos"] != None:
+                        if abs(getPlaneStateFromIcao(data, key)["flightInfo"]["angle"]-newAngle) > 15:
                             item["flightInfo"]["angle"] = newAngle
                         else:
                             item["flightInfo"]["angle"] = prevAngle
@@ -152,7 +183,8 @@ def updateAerealPos(msg):
                 else:
                     item["flightInfo"]["angle"] = 0
                     
-                temp[key] = item
+                # temp[key] = item
+                temp.append(item)
         write_json(temp)
     # else: # if no entry exists do nothing
     #     return
@@ -184,7 +216,7 @@ def handle_data(msg):
     # print('message TC: ', msgTC)
     # print('------------------found position message--------------------')
     if msgTC in range(9,19) or msgTC in range(20,23): #checking if TC == local aereal position
-        
+        print('not updataing yet...')
         updateAerealPos(msg)
         # print('air position: ', decrypt.getAirbornePos(msg[0]))
     elif msgTC in  range(1,5): #identity typecode
