@@ -43,11 +43,13 @@ def run():
         for teh current plane
     '''
     while True:
-        time.sleep(60)
+        
         removeSignalLessPlanes()
+        time.sleep(60)
 
 
 if __name__ == "__main__":
     while True:
-        time.sleep(60)
+        
         removeSignalLessPlanes()
+        time.sleep(60)

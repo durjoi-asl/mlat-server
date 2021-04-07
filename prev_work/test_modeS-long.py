@@ -1,3 +1,6 @@
+'''
+    for testing/practicing mode-S long decoding using pyModeS library
+'''
 import pyModeS as pms
 adsbData = "8D4840D6202CC371C32CE0576098"
 # data = pms.tell("8D4840D6202CC371C32CE0576098")

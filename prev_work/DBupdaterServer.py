@@ -1,3 +1,12 @@
+'''
+    not working 
+'''
+# broken pipe error, most likely didn't parse JSON properly
+# Traceback (most recent call last):
+#   File "DBupdaterServer.py", line 26, in <module>
+#     soc.sendall(data)
+# BrokenPipeError: [Errno 32] Broken pipe
+
 import socket
 import json
 import time

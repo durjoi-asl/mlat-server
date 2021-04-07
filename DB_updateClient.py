@@ -1,3 +1,6 @@
+'''
+    Client for testing out the DBserverHttp.py server
+'''
 import socket
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

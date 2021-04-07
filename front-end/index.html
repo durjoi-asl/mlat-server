@@ -7,6 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Maps Mode-S long position</title>
+    <link rel="stylesheet" href="./css/sidebar.css"></link>
     <style>
         #map{
             height: 800px;
@@ -28,20 +29,22 @@
 
         </tr>
     </table>
+    <!-- The sidebar -->
+    <div id="mySidebar" class="sidebar">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        <a href="#">About</a>
+        <a href="#">Services</a>
+        <a href="#">Clients</a>
+        <a href="#">Contact</a>
+      </div>
+      
+
     <h1>My Google Map</h1>
     <div id="map">
 
     </div>
 
-    
-    <!-- Async script executes immediately and must be after any DOM elements used in callback. -->
-    <script
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAhhveERkRFz2TIjA8akOSGIAC3bpsm5U8&callback=initMap&libraries=&v=weekly"
-      async
-    ></script>
-
-
-    
+    <script src="./js/sidebar.js"></script>
     
 
     <script>
@@ -61,7 +64,7 @@
             var options = {
                     zoom:7,
                     center:{lat:23.8363 , lng: 90.4177}
-            }
+            };  
             
 
             map = new google.maps.Map(document.getElementById('map'), options);
@@ -69,14 +72,17 @@
             addMarker({lat:23.8434 , lng: 90.4029});
             // addMarker({lat:23.8444 , lng: 90.4035});
             function addMarker(coords, icao){
-                var marker = new google.maps.Marker({
+                var marker = new  google.maps.Marker({
                     position:coords,
                     map: map,
-                    icon: image
+                    icon: image,
+                    labelContent: "airport",
+                    labelAnchor: new google.maps.Point(18, 12),
+                    labelInBackground: true
                 });
                 markers.push(marker);
                 markerDic[icao]=marker;
-            }
+            };
 
         }
         function getIcaoKeys(data){
@@ -86,31 +92,60 @@
             }
             return keys;
         }
+        function getMarkerLatFromIcao(icao){
+            for(indx in markers){
+                if(markers[indx]["label"] == icao){
+                    console.log('aajajajjaja');
+                    console.log(markers[indx].position.lat());
+                    return markers[indx].position.lat();
+                }
+            }
+        }
         async function addMarker(coords, icao){ // adds new marker 
 
-                var marker = new google.maps.Marker({
-                    position:coords,
-                    icon: {
+               
+                var myIcon ={
                         path: "M134.875,19.74c0.04-22.771,34.363-22.771,34.34,0.642v95.563L303,196.354v35.306l-133.144-43.821v71.424l30.813,24.072 v27.923l-47.501-14.764l-47.501,14.764v-27.923l30.491-24.072v-71.424L3,231.66v-35.306l131.875-80.409V19.74z",
 
                         
-                        fillColor: "black",
+                        fillColor: "red",
                         fillOpacity: 0.6,
                         strokeWeight: 0,
                         rotation: 0,
                         scale: .08,
                         anchor: new google.maps.Point(15, 30),
+                        labelOrigin: new google.maps.Point(-150,-80),
+                        // labelClass : "my-custom-class-for-label",
+                        labelInBackground: true
+                    }
+
+                //new google.maps.Marker({
+                //new MarkerWithLabel({
+                // icon: myIcon,    
+                var marker = new google.maps.Marker({
+                    position:coords,
+                    icon: myIcon,
+                    label: {
+                        text: icao,
+                        color: "blue",
+                        fontSize: "10px",
+                        fontWeight: "bold"
                     }
                 });
                 var infoWindow = new google.maps.InfoWindow({
                     content: `<h5>ICAO: ${icao}</h5>
-                              <p>lat: ${coords["lat"]}</p>
+                              <p>lat: ${ getMarkerLatFromIcao(icao)}</p>
                               <p>long: ${coords["lng"]}</p>
                               <p>inFlight: </p>
                               <p>ground: </p>`
                 });
                 marker.addListener('click', function(){
                     infoWindow.open(map, marker);
+                })
+                marker.addListener('click', function(){
+                    myIcao = marker.label.text;
+                    // console.log(myIcao);
+                    openNav(myIcao);
                 })
 
                 markerICAO.push(icao);
@@ -119,13 +154,13 @@
                 // console.log(icao);
                 marker.setMap(map);
             }
-        async function updateMarker(coords, icao, angle){ // updates marker position
+        async function updateMarker(coords, icao, angle){ // updates marker position and angle
             var marker = markerDic[icao];
             marker.setPosition(coords);
 
             myIcon = markerDic[icao].getIcon() 
             myIcon["rotation"] = angle
-            console.log(myIcon);
+            // console.log(myIcon);
             markerDic[icao].setIcon(myIcon)
         }
         
@@ -136,10 +171,10 @@
             this.ICAO_keys = getIcaoKeys(data); //
             var data_length = ICAO_keys.length;
             dota = data; // for testing purpose the data we get is set to global var dota
-            console.log(ICAO_keys);
-            console.log('data');
-            console.log(data);
-            console.log("data")
+            // console.log(ICAO_keys);
+            // console.log('data');
+            // console.log(data);
+            // console.log("data")
             
             for(indx in data){
                 var latT = data[indx]["flightInfo"]["lat"]; // latitude of current info received
@@ -147,9 +182,9 @@
                 var angle =  data[indx]["flightInfo"]["angle"];
                 var key = data[indx]['icao'] // key is the icao number
                 
-                if(markerICAO.includes(key)){
+                if(markerICAO.includes(data[indx]['icao'])){
                     updateMarker({lat: Number(latT) , lng: Number(lngT)}, key, angle);
-                    console.log("update marker");
+                    // console.log("update marker");
                 }
                 else{
                     addMarker({lat: Number(latT) , lng: Number(lngT)}, key);
@@ -166,9 +201,36 @@
  
 
         getData();
-        // setInterval(getData, 2000);
+        var nummbs = 0;
+        while(nummbs <5 ){
+            setInterval(getData, 2000);
+            NUMMBS += 1;
+        }
     </script>
 
+        <!-- Async script executes immediately and must be after any DOM elements used in callback. -->
+        <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAhhveERkRFz2TIjA8akOSGIAC3bpsm5U8&callback=initMap&libraries=&v=weekly"
+        async
+      ></script>
+  
+      <!-- this is the google markerWithLabel library -->
+      <script src="https://unpkg.com/@googlemaps/markerwithlabel/dist/index.min.js"></script>
+
+    <style>
+        .my-custom-class-for-label {
+        width: 50px; 
+        height: 20px;
+
+        border: 1px solid #eb3a44;
+        border-radius: 5px;
+        background: #fee1d7;  text-align: center;
+        line-height: 20px;
+        font-weight: bold;
+        font-size: 14px;
+        color: #eb3a44;
+        }
+    </style>
 
 </body>
 

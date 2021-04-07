@@ -1,3 +1,6 @@
+'''
+    API end point that sends airplane information from planeDB
+'''
 from http.server import HTTPServer, BaseHTTPRequestHandler
 # import BaseHttp
 ## https doesn't work, work on that later

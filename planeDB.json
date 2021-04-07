@@ -1,1 +1,106 @@
-[]
+[
+    {
+        "icao": "06A072",
+        "identity": {
+            "category": 5,
+            "callsign": "QTR8350_"
+        },
+        "inflight": true,
+        "inGround": false,
+        "flightInfo": {
+            "lat": 23.81721,
+            "long": 91.60543,
+            "speed": null,
+            "altitude": null,
+            "prevPos": {
+                "lat": 23.81744,
+                "long": 91.60431
+            },
+            "angle": 100.77363818782578
+        },
+        "gndInfo": [
+            null,
+            null,
+            null
+        ],
+        "last_updated": "04/07/2021, 16:40:07"
+    },
+    {
+        "icao": "800C92",
+        "identity": {
+            "category": 3,
+            "callsign": "IGO433__"
+        },
+        "inflight": true,
+        "inGround": false,
+        "flightInfo": {
+            "lat": 25.08626,
+            "long": 89.71031,
+            "speed": null,
+            "altitude": null,
+            "prevPos": {
+                "lat": 25.08812,
+                "long": 89.71342
+            },
+            "angle": -121.60836774794603
+        },
+        "gndInfo": [
+            null,
+            null,
+            null
+        ],
+        "last_updated": "04/07/2021, 16:39:48"
+    },
+    {
+        "icao": "8007CF",
+        "identity": {
+            "category": 3,
+            "callsign": "IGO525__"
+        },
+        "inflight": true,
+        "inGround": false,
+        "flightInfo": {
+            "lat": 24.15302,
+            "long": 92.26598,
+            "speed": null,
+            "altitude": null,
+            "prevPos": {
+                "lat": 24.15889,
+                "long": 92.28158
+            },
+            "angle": -111.63565552398595
+        },
+        "gndInfo": [
+            null,
+            null,
+            null
+        ],
+        "last_updated": "04/07/2021, 16:40:04"
+    },
+    {
+        "icao": "040159",
+        "identity": {
+            "category": 5,
+            "callsign": "ETH3671_"
+        },
+        "inflight": true,
+        "inGround": false,
+        "flightInfo": {
+            "lat": 22.65893,
+            "long": 88.22083,
+            "speed": null,
+            "altitude": null,
+            "prevPos": {
+                "lat": 22.65916,
+                "long": 88.34406
+            },
+            "angle": -97.09757584358097
+        },
+        "gndInfo": [
+            null,
+            null,
+            null
+        ],
+        "last_updated": "04/07/2021, 16:40:00"
+    }
+]
