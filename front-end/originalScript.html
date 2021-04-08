@@ -1,56 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Maps Mode-S long position</title>
-    <link rel="stylesheet" href="./css/sidebar.css"></link>
-    <style>
-        #map{
-            height: 800px;
-            width: 100%;
-        }
-    </style>
+    <title>Document</title>
 </head>
 <body>
-    <table id="aircraft-table" class=" table table-striped">
-        <tr  class="bg-info">
-            <th>ICAO</th>
-            <th>lat</th>
-            <th>long</th>
-            <th>speed</th>
-            <th>altitude</th>
-            <th>Gnd-lat</th>
-            <th>Gnd-long</th>
-            <th>Gnd-speed</th>
-
-        </tr>
-    </table>
-    <!-- The sidebar -->
-    <div id="mySidebar" class="sidebar">
-        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-        <a href="#">About</a>
-        <a href="#">Services</a>
-        <a href="#">Clients</a>
-        <a href="#">Contact</a>
-      </div>
-      
-
-    <h1 style="text-align: center;">My Google Map</h1>
-    <div id="map">
-
-    </div>
-
-    <!-- the script below is for the sidebar -->
-    <script src="./js/sidebar.js"></script>
-    
-    <!-- the script below is for google maps integratsion -->
-    <!-- <script src="./js/planeMap.js"></script> -->
     <script>
-                var dota;
+        var dota;
         var myD = [];
         var ICAO_keys = [];
         const api_url = 'http://localhost:8001';
@@ -205,32 +163,5 @@
         getData();
         setInterval(getData, 2000);
     </script>
-
-
-        <!-- Async script executes immediately and must be after any DOM elements used in callback. -->
-        <script
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAhhveERkRFz2TIjA8akOSGIAC3bpsm5U8&callback=initMap&libraries=&v=weekly"
-        async
-      ></script>
-  
-      <!-- this is the google markerWithLabel library -->
-      <script src="https://unpkg.com/@googlemaps/markerwithlabel/dist/index.min.js"></script>
-
-    <style>
-        .my-custom-class-for-label {
-        width: 50px; 
-        height: 20px;
-
-        border: 1px solid #eb3a44;
-        border-radius: 5px;
-        background: #fee1d7;  text-align: center;
-        line-height: 20px;
-        font-weight: bold;
-        font-size: 14px;
-        color: #eb3a44;
-        }
-    </style>
-
 </body>
-
 </html>

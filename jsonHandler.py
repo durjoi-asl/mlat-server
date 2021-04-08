@@ -24,6 +24,8 @@ def checkPlane(icaoId):
     '''
     checks if plane exists in DB
     '''
+    data = getData()
+     
     pass
 
 def createEntry(msg):
@@ -59,7 +61,8 @@ def createEntry(msg):
  
 def firstEntry(msg):
     '''
-    creates new entry for new icao address found
+    creates new entry for new icao address found. firstEntry is different from createEntry, 
+    firstEntry creates an entry only when the DB is empty
     '''
     temp = []
     newItem = {
@@ -170,7 +173,7 @@ def updateAerealPos(msg):
                 if getPlaneStateFromIcao(data, key)["flightInfo"]["lat"] != None: # lat long info not available
                     
                     newAngle = getAngle.angleFromCoordinate(getPlaneStateFromIcao(data, key)["flightInfo"]["lat"],getPlaneStateFromIcao(data, key)["flightInfo"]["long"], lt, ln)
-                    print(data)
+                    # print(data)
                     prevAngle = getPlaneStateFromIcao(data, key)["flightInfo"]["angle"]
 
                     if getPlaneStateFromIcao(data, key)["flightInfo"]["prevPos"] != None:
@@ -189,11 +192,72 @@ def updateAerealPos(msg):
     # else: # if no entry exists do nothing
     #     return
 
+    # print("=================================================position:  ", (lt, ln))
+
+def updateGndInfo(msg):
+    
+    # complete this for ground position
+    lt, ln = pms.adsb.airborne_position_with_ref(msg, REF_LAT, REF_LON)
+    data = getData()
+    temp = []
+
+    icaoN = pms.adsb.icao(msg)
+
+    if icaoN == None or data == None or icaoN not in getKeys(data) or data == None:
+        return
+    else : # if entry exists 
+        keys = getKeys(data)
+        for key in keys: #data.keys(): # check if icao already exists in saved json data
+            if key != icaoN:
+                # temp[key] = data[key]
+                temp.append(getPlaneStateFromIcao(data,key))
+            else:
+                
+
+                item = {
+                    "icao": key,
+                    "identity":getPlaneStateFromIcao(data,key)['identity'],
+                    "inflight": False,
+                    "inGround": True,
+                    "flightInfo":None,
+                    "gndInfo":{
+                        "lat":lt,
+                        "long": ln,
+                        "speed": getPlaneStateFromIcao(data,key)["gndInfo"]["speed"],
+                        # "altitude": getPlaneStateFromIcao(data, key)["flightInfo"]["altitude"],
+                        "prevPos": {
+                            "lat": getPlaneStateFromIcao(data, key)["gndInfo"]["lat"],
+                            "long": getPlaneStateFromIcao(data,key)["gndInfo"]["long"],
+                            }
+                        # "angle": getAngle.angleFromCoordinate(data[key]["flightInfo"]["lat"],data[key]["flightInfo"]["long"], lt, ln)
+                    },
+                    "gndInfo": [None,None,None],
+                    "last_updated": datetime.datetime.now().strftime(TIME_FORMAT)
+                }
+                if getPlaneStateFromIcao(data, key)["flightInfo"]["lat"] != None: # lat long info not available
+                    
+                    newAngle = getAngle.angleFromCoordinate(getPlaneStateFromIcao(data, key)["flightInfo"]["lat"],getPlaneStateFromIcao(data, key)["flightInfo"]["long"], lt, ln)
+                    # print(data)
+                    prevAngle = getPlaneStateFromIcao(data, key)["flightInfo"]["angle"]
+
+                    if getPlaneStateFromIcao(data, key)["flightInfo"]["prevPos"] != None:
+                        if abs(getPlaneStateFromIcao(data, key)["flightInfo"]["angle"]-newAngle) > 15:
+                            item["gndInfo"]["angle"] = newAngle
+                        else:
+                            item["gndInfo"]["angle"] = prevAngle
+                    else:
+                        item["gndInfo"]["angle"] = 0
+                else:
+                    item["gndInfo"]["angle"] = 0
+                    
+                # temp[key] = item
+                temp.append(item)
+        write_json(temp)
+    
 
 
-    print("=================================================position:  ", (lt, ln))
 
-def updateGndInfo():
+    
 
     pass
 

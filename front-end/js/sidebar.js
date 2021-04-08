@@ -1,6 +1,6 @@
 console.log('indide sidebar file');
 
-let sidebarIcao;
+var sidebarIcao;
 let sidebarUpdaterTimerID;
 function wasupSidebar(){
     console.log('wassssup');
@@ -24,22 +24,26 @@ function openNav(icao) {
                                                         <h2 id="sideLng">lng: ${lng}</h2>`
     
     document.getElementById("mySidebar").style.width = "250px";
-    document.getElementById("main").style.marginLeft = "250px";
+    // document.getElementById("main").style.marginLeft = "250px";
     
-    sidebarUpdaterTimerID=setInterval(changeLatLong,1500)
-  }
+    sidebarUpdaterTimerID=setInterval(changeLatLong,1500);
+  } 
+
 
   function changeLatLong(){
+      newLat = markerDic[sidebarIcao].getPosition().lat();
+      newLng = markerDic[sidebarIcao].getPosition().lat();
       document.getElementById('sideLat').innerText="lat: "+markerDic[sidebarIcao].getPosition().lat();
       document.getElementById('sideLng').innerText="lng: "+markerDic[sidebarIcao].getPosition().lng();
       console.log('changed lat lng');
   }
   
+
   /* Set the width of the sidebar to 0 and the left margin of the page content to 0 */
   function closeNav() {
     clearInterval(sidebarUpdaterTimerID);
     console.log('closing nav');
     document.getElementById("mySidebar").innerHTML = "";
     document.getElementById("mySidebar").style.width = "0";
-    document.getElementById("main").style.marginLeft = "0"; 
+    // document.getElementById("main").style.marginLeft = "0"; 
   } 
