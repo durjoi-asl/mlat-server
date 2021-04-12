@@ -1,7 +1,7 @@
 import json
 import time
 import datetime
-from jsonHandler import getData, write_json, TIME_FORMAT
+from jsonHandler import jsonHandlerClass
 
 def removeSignalLessPlanes():
     '''
@@ -9,11 +9,12 @@ def removeSignalLessPlanes():
         if last update time from current time is more than 120s then deletes the data
         for teh current plane
     '''
-    data = getData()
+    jsonHandler = jsonHandlerClass()
+    data = jsonHandler.getData()
     temp = []
     if data != None:
         for planeData in data:
-            timeStamp = datetime.datetime.strptime(planeData["last_updated"], TIME_FORMAT)
+            timeStamp = datetime.datetime.strptime(planeData["last_updated"], jsonHandler.TIME_FORMAT)
             time_now = datetime.datetime.now()
             diff = (time_now-timeStamp).total_seconds()
             
@@ -24,7 +25,7 @@ def removeSignalLessPlanes():
                 print("upto date: ", planeData['icao'])
                 temp.append(planeData)
 
-    write_json(temp)
+    jsonHandler.write_json(temp)
 
 def run():
     '''
@@ -43,13 +44,11 @@ def run():
         for teh current plane
     '''
     while True:
-        
         removeSignalLessPlanes()
         time.sleep(60)
 
 
 if __name__ == "__main__":
     while True:
-        
         removeSignalLessPlanes()
         time.sleep(60)

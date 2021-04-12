@@ -3,7 +3,10 @@
 #  'bin2hex', 'bin2int', 'c_common', 'commb', 'common', 'cprNL', 'crc', 'data', 'decoder', 'df', 'dirpath', 
 #  'extra', 'floor', 'gray2alt', 'hex2bin', 'hex2int', 'icao', 'idcode', 'is_icao_assigned', 'os', 'squawk',
 #   'surv', 'tcpclient', 'tell', 'typecode', 'warnings', 'wrongstatus']
-
+'''
+    practicing decoding mlat messages
+    not using this anywhere, it's like a wrapper for pyModeS
+'''
 import pyModeS as pms
 import jsonHandler
 msg1, msg2 = ',','12'

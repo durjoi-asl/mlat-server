@@ -3,14 +3,17 @@ import threading
 from Decoder import Decoder
 import pyModeS as pms
 import decrypt
-import jsonHandler
+from jsonHandler import jsonHandlerClass
 import time
+from DBmongoDB import DB_handler
 
 ADSB_MESSAGES = {}
 DF_11 = {}
 MODE_AC = {}
 
 adsbd_AirCraftInfo = {}
+
+latLng = [[23.83588, 90.41611],[22.35443, 91.83391]]
 
 class TcpClient():
     def __init__(self, host, port, buffersize = 4096):
@@ -37,6 +40,8 @@ class TcpClient():
             decoder = Decoder(data)
             decoder.handle_decode()
             messages_mlat = decoder.handle_messages()
+            
+
             # print("[messages_mlat] [2]: ", messages_mlat[2])
             # tempMsg = messages_mlat[1]
             # pms.tell(tempMsg[1])
@@ -51,6 +56,7 @@ class TcpClient():
                 if(df == 17):
                     icao = pms.adsb.icao(msg[0])
                     
+                    # strength = pms.adsb.
                     # print('icao: ', icao)
                     # print('msg: ',msg[0])
                     # print('msg[0]: ', msg[0])
@@ -61,8 +67,22 @@ class TcpClient():
                     #     print('air position: ', decrypt.getAirbornePos(msg[0]))
                     # if msgTC in range(0,5):
                     #     jsonHandler.handleID(msg[0])
-                    jsonHandler.handle_data(msg[0])
-                     # remove from production code
+
+                    lat = latLng[thread_id-1][0]
+                    lng = latLng[thread_id-1][1]
+
+                    # handleJson = jsonHandlerClass(lat=lat,lng=lng)
+                    # handleJson.handle_data(msg[0])
+                    
+                    DB_handler.handle_data(msg[0])
+                    
+                    # try:
+                    #     print("nuc_p ERROR=======   ",pms.adsb.nuc_p(msg[0]))
+                    #     print("nuc_v ERROR=======   ",pms.adsb.nuc_v(msg[0]))
+                    #     print("Version ERROR=======   ",pms.adsb.version(msg[0]))
+                    # except:
+                    #     print("ooy teri")
+                    # remove from production code
 
                     if msg[0] in ADSB_MESSAGES.keys():
                         ADSB_MESSAGES[msg[0]][thread_id] = msg[1]
@@ -128,6 +148,6 @@ class TcpClient():
 
             print(f"[ACTIVE CONNECTIONS] {threading.activeCount()-1}")
             
-# client = TcpClient(["192.168.30.27", "192.168.101.3"], 10003)
-client = TcpClient([ "192.168.101.3"], 10003)
+client = TcpClient(["192.168.30.27", "192.168.101.3"], 10003)
+# client = TcpClient([ "192.168.101.3"], 10003)
 client.run()
