@@ -1,4 +1,5 @@
 '''
+    PRACTICE USING pymongo here;
     create operations for basic functions, create new entry(just adds callsign and sth), update 
     entry(one for flightInfo the other for gndInfo), update velocity, 
     delete entry and read entry ie CRUD

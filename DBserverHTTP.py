@@ -2,6 +2,10 @@
     API end point that sends airplane information from planeDB
 '''
 from http.server import HTTPServer, BaseHTTPRequestHandler
+# from DBmongoDB.DB_handler import getAllData
+from DBmongoDB.DB_handler import mongoDBClass
+
+mongo_obj = mongoDBClass(0,0)
 # import BaseHttp
 ## https doesn't work, work on that later
 
@@ -26,6 +30,13 @@ def getData():
         # print('data: ',data)
         print("Sending data ")
         return data
+        
+def getDBData():
+    data = mongo_obj.getAllData()
+    data = bytes(data, 'utf-8')
+    print(data)
+    print(type(data))
+    return data
 
 class getPlaneInfo(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -33,7 +44,10 @@ class getPlaneInfo(BaseHTTPRequestHandler):
         self.send_header('content-type', 'application/json')
         self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
-        self.wfile.write(getData())
+        # getDBData()
+        # self.wfile.write(getData())
+        self.wfile.write(getDBData())
+
         # self.wfile.write("hello world")
 
 def main():

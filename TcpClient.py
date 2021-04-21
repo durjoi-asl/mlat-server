@@ -5,7 +5,7 @@ import pyModeS as pms
 import decrypt
 from jsonHandler import jsonHandlerClass
 import time
-from DBmongoDB import DB_handler
+from DBmongoDB.DB_handler import mongoDBClass
 
 ADSB_MESSAGES = {}
 DF_11 = {}
@@ -13,10 +13,20 @@ MODE_AC = {}
 
 adsbd_AirCraftInfo = {}
 
-latLng = [[23.83588, 90.41611],[22.35443, 91.83391]]
+latLng = []
 
 class TcpClient():
-    def __init__(self, host, port, buffersize = 4096):
+    '''
+        constructor params are: hostIP, portNumber, buffersize, lantLng(2D array containing the lat and long positions of the hostIP addresses)
+        \n eg for latLng = [[23.83588, 90.41611],[22.35443, 91.83391]]
+    '''
+
+    def __init__(self, host, port, latLng=[[23.83588, 90.41611],[22.35443, 91.83391]], buffersize = 4096):
+        '''
+            params are: hostIP, portNumber, buffersize, lantLng(2D array containing the lat and long positions of the hostIP addresses)
+            eg for latLng = [[23.83588, 90.41611],[22.35443, 91.83391]]
+        '''
+
         super(TcpClient, self).__init__()
         
         self.host = host
@@ -25,12 +35,19 @@ class TcpClient():
         self.socket = None
         self.buffersize = buffersize
         self.threadList = []
+        
+        self.latLng = latLng
+
+        #initialize the DB connection
+        
 
     def handle_connection(self, host, thread_id):
         addr = (host, self.port)
         
         self.socket.connect(addr)
         
+        ADSB_db_handler = mongoDBClass(self.latLng[thread_id-1][0], self.latLng[thread_id-1][1])
+
         while True: 
             data = self.socket.recv(self.buffersize)
             # print('[data]: ', data)
@@ -68,13 +85,15 @@ class TcpClient():
                     # if msgTC in range(0,5):
                     #     jsonHandler.handleID(msg[0])
 
-                    lat = latLng[thread_id-1][0]
-                    lng = latLng[thread_id-1][1]
+                    print('thread ID: ', thread_id)
+                    print('latLng: ', latLng)
+                    lat = self.latLng[thread_id-1][0]
+                    lng = self.latLng[thread_id-1][1]
 
                     # handleJson = jsonHandlerClass(lat=lat,lng=lng)
                     # handleJson.handle_data(msg[0])
                     
-                    DB_handler.handle_data(msg[0])
+                    ADSB_db_handler.handle_data(msg[0])
                     
                     # try:
                     #     print("nuc_p ERROR=======   ",pms.adsb.nuc_p(msg[0]))
@@ -130,6 +149,7 @@ class TcpClient():
             
     def handle_thread(self):
         
+        
         for i, host_ip in enumerate(self.host): 
             newThread = threading.Thread(target=self.handle_connection, args=(host_ip, i+1))
             
@@ -148,6 +168,6 @@ class TcpClient():
 
             print(f"[ACTIVE CONNECTIONS] {threading.activeCount()-1}")
             
-client = TcpClient(["192.168.30.27", "192.168.101.3"], 10003)
+client = TcpClient(["192.168.30.27", "192.168.101.3"], 10003, [[23.83588, 90.41611],[22.35443, 91.83391]])
 # client = TcpClient([ "192.168.101.3"], 10003)
 client.run()
