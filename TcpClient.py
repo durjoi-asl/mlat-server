@@ -13,7 +13,7 @@ MODE_AC = {}
 
 adsbd_AirCraftInfo = {}
 
-latLng = []
+# latLng = []
 
 class TcpClient():
     '''
@@ -47,8 +47,19 @@ class TcpClient():
         self.socket.connect(addr)
         
         ADSB_db_handler = mongoDBClass(self.latLng[thread_id-1][0], self.latLng[thread_id-1][1])
+        print("thread ID: ", thread_id)
+        # print("latlng: ", la)
+        print("lat long: ",self.latLng[thread_id-1] )
+        print("address: ", addr)
+        print()
+        
 
         while True: 
+            print("in while loop, Thread ID: ", thread_id)
+            print("DB lat: " ,ADSB_db_handler.REF_LAT)
+            print("DB long: " ,ADSB_db_handler.REF_LON)
+
+
             data = self.socket.recv(self.buffersize)
             # print('[data]: ', data)
             print(f"\n[DATA PACKET] ------ {host} ----- {thread_id}")
@@ -85,8 +96,7 @@ class TcpClient():
                     # if msgTC in range(0,5):
                     #     jsonHandler.handleID(msg[0])
 
-                    print('thread ID: ', thread_id)
-                    print('latLng: ', latLng)
+                    
                     lat = self.latLng[thread_id-1][0]
                     lng = self.latLng[thread_id-1][1]
 
@@ -168,6 +178,14 @@ class TcpClient():
 
             print(f"[ACTIVE CONNECTIONS] {threading.activeCount()-1}")
             
-client = TcpClient(["192.168.30.27", "192.168.101.3"], 10003, [[23.83588, 90.41611],[22.35443, 91.83391]])
-# client = TcpClient([ "192.168.101.3"], 10003)
+# client = TcpClient(["192.168.30.27", "192.168.101.3"], 10003, [[23.83614, 90.41637],[22.35443, 91.83391]])
+client = TcpClient([ "192.168.30.27"], 10003, [[23.83614, 90.41637],[22.35443, 91.83391]]) #first receiver Perfecto
+# client = TcpClient([ "192.168.101.3"], 10003, [[22.35443, 91.83391]]) #second receiver perfecto
 client.run()
+
+#updated receiver 1 coordinates
+# Latitude	23.83614° North
+# Longitude	90.41637° East
+
+# older coordinates
+# [[23.83588, 90.41611],[22.35443, 91.83391]]

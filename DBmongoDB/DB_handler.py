@@ -8,12 +8,17 @@ from bson.json_util import dumps
 class mongoDBClass:
 
     TIME_FORMAT = "%m/%d/%Y, %H:%M:%S"
-    REF_LAT = 23.83588
-    REF_LON = 90.41611
+    # REF_LAT = 23.83588
+    # REF_LON = 90.41611
 
     def __init__(self, lat, lng):
         self.REF_LAT = lat
         self.REF_LON = lng
+
+        print('####################################### new mongoDb handler created[for debugging] #######################################')
+        print("lat: ", self.REF_LAT)
+        print("long: ", self.REF_LON)
+        print()
 
     cluster = MongoClient() #client = MongoClient('localhost', 27017)
     # print(cluster)
@@ -85,8 +90,8 @@ class mongoDBClass:
         msg_icao = pms.adsb.icao(msg)
         search_res = self.adsb_collection.find_one({"icao":msg_icao})
         if search_res != None:
-            #update data if icao entry already exists
-            print('updating Stuff==========')
+            # update data if icao entry already exists
+            print('Update areal data ==========')
             
             current_Lat = search_res['flightInfo']['lat']
             current_Long = search_res['flightInfo']['long']
@@ -201,7 +206,7 @@ class mongoDBClass:
                 
         except :
             # figure out why error arises sometimes
-            print('error air speed XD XD XD XD ')
+            print('error air speed, icao: ', msg_icao)
 
     def handle_GndVelocity(self, msg):
         '''
@@ -227,7 +232,7 @@ class mongoDBClass:
             self.handleID(msg)
         elif msgTC in range(5,9): #ground position
             
-            self.updateGndPos(msg)
+            # self.updateGndPos(msg)
             print('================================== ground position ==================================')
             # print(' ')
         elif msgTC == 19: #airborne velocity
