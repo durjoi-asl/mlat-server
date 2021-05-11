@@ -3,6 +3,7 @@ import pyModeS as pms
 import datetime
 import math as Math
 from bson.json_util import dumps
+from .singletonDB import MongoConnectionSingleton
 
 
 class mongoDBClass:
@@ -14,27 +15,28 @@ class mongoDBClass:
     def __init__(self, lat, lng):
         self.REF_LAT = lat
         self.REF_LON = lng
+        self.adsb_collection = MongoConnectionSingleton.get_instance()
 
         print('####################################### new mongoDb handler created[for debugging] #######################################')
         print("lat: ", self.REF_LAT)
         print("long: ", self.REF_LON)
         print()
 
-    cluster = MongoClient() #client = MongoClient('localhost', 27017)
-    # print(cluster)
-    db = cluster["planeInfo"]
-    adsb_collection = db['ADS-B']
+    # cluster = MongoClient() #client = MongoClient('localhost', 27017)
+    # # print(cluster)
+    # db = cluster["planeInfo"]
+    # adsb_collection = db['ADS-B']
 
 
-    def createEntry(self, msg):
+    def createIdentityEntry(self, data):
         '''
         creates new entry for new icao address found
         '''
         post = {
-                "icao": pms.adsb.icao(msg),
+                "icao": data[0],
                 "identity":{
-                    "category":pms.adsb.category(msg),
-                    "callsign":pms.adsb.callsign(msg)
+                    "category":data[1],
+                    "callsign":data[2]
                     },
                 "inflight": False,
                 "inGround": False,
@@ -65,6 +67,23 @@ class mongoDBClass:
 
         self.adsb_collection.insert_one(post)
         
+    def handleID(self, data):
+        # msg_icao = pms.adsb.icao(msg)
+        srch_res = self.adsb_collection.find_one({"icao":data[0]})
+        if srch_res == None:
+            self.createIdentityEntry(data)
+        else:
+            self.updateTimeStamp(data[0])
+
+    def updateTimeStamp(self, icao):
+        '''
+            just updates the TimeStamp of the icao's data received
+        '''
+        # plane = adsb_collection.find_one({{"icao":icao}})
+
+        pass
+
+
 
     def getAllData(self):
         '''
@@ -79,16 +98,18 @@ class mongoDBClass:
         #     data.append(item)
         return json_data
 
+
     def getPlaneByIcao(self):
         pass
 
-    def updateAerealPos(self, msg):
+    def updateAerealPos(self, data):
         '''
             updates areal position of an existing airplane in the DB
+            \n data param receives a list => [icao, decoded_new_lat, decoded_new_long]
         '''
-        lt, ln = pms.adsb.airborne_position_with_ref( msg, self.REF_LAT, self.REF_LON)
-        msg_icao = pms.adsb.icao(msg)
-        search_res = self.adsb_collection.find_one({"icao":msg_icao})
+        # lt, ln = pms.adsb.airborne_position_with_ref( msg, self.REF_LAT, self.REF_LON)
+        # msg_icao = pms.adsb.icao(msg)
+        search_res = self.adsb_collection.find_one({"icao":data[0]})
         if search_res != None:
             # update data if icao entry already exists
             print('Update areal data ==========')
@@ -96,50 +117,52 @@ class mongoDBClass:
             current_Lat = search_res['flightInfo']['lat']
             current_Long = search_res['flightInfo']['long']
 
-            #UPDATE flight lat, long, inflight status, previousePos.lat and previousePos.long
-            self.adsb_collection.update_one({"icao":msg_icao}, {"$set":{"inflight": True}})
-            self.adsb_collection.update_one({"icao":msg_icao}, {"$set":{"flightInfo.lat": lt}})
-            self.adsb_collection.update_one({"icao":msg_icao}, {"$set":{"flightInfo.long": ln}})
-            self.adsb_collection.update_one({"icao":msg_icao}, {"$set":{"flightInfo.prevPos.lat": current_Lat}})
-            self.adsb_collection.update_one({"icao":msg_icao}, {"$set":{"flightInfo.prevPos.long": current_Long}})
+            
+            self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"inflight": True}})
+            self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.lat": data[1]}})
+            self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.long": data[2]}})
+            self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.prevPos.lat": current_Lat}})
+            self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.prevPos.long": current_Long}})
 
             if current_Lat != None:
                 # calculate angle and make entry only if current_lat(ie previous lat now) exists
-                newAngle = self.angleFromCoordinate(current_Lat, current_Long, lt, ln)
-                self.adsb_collection.update_one({"icao":msg_icao}, {"$set":{"flightInfo.angle": newAngle}})
+                newAngle = self.angleFromCoordinate(current_Lat, current_Long, data[1], data[2])
+                self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.angle": newAngle}})
 
         else:
             #do nothing if icao entry doesn't already exist
             pass
 
-    def updateGndPos(self, msg):
-        msg_icao = pms.adsb.icao(msg)
+    def updateGndPos(self, data):
+        '''
+            updates GROUND position of an existing airplane in the DB
+            \n data param receives a list => [icao, decoded_new_lat, decoded_new_long]
+        '''
+
+        # msg_icao = pms.adsb.icao(msg)
         # print(type(msg_icao))
-        search_plane = self.adsb_collection.find_one({"icao": msg_icao})
+        search_plane = self.adsb_collection.find_one({"icao": data[0]})
         print("search_plane: ", search_plane)
         if search_plane == None:
-            print('================================== ground position ==================================')
             print('plane does not exist for ground position update')
-            print('icao: '+msg_icao)
-            lt, ln = pms.adsb.position_with_ref(msg, self.REF_LAT, self.REF_LON)
-            print('lat: ', lt)
-            print('long: ', ln)
-            pass
+            pass # or should it be return
+
         elif search_plane['gndInfo']['lat'] ==None and search_plane['gndInfo']['long'] == None:
             # calculate initial position should implement globally ambigious position later
-            self.adsb_collection.update_one({"icao":msg_icao}, {"$set":{"inGround": True}})
-            self.adsb_collection.update_one({"icao":msg_icao}, {"$set":{"inflight": False}})
-            lt, ln = pms.adsb.position_with_ref(msg, self.REF_LAT, self.REF_LON)
-            self.adsb_collection.update_one({"icao":msg_icao}, {"$set":{"gndInfo.lat": lt}})
-            self.adsb_collection.update_one({"icao":msg_icao}, {"$set":{"gndInfo.long": ln}})
+            self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"inGround": True}})
+            self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"inflight": False}})
+            
+            self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"gndInfo.lat": data[1]}})
+            self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"gndInfo.long": data[1]}})
+            
         else:
             # position already exists  should implement locally ambigious position later
-            self.adsb_collection.update_one({"icao":msg_icao}, {"$set":{"inGround": True}})
-            self.adsb_collection.update_one({"icao":msg_icao}, {"$set":{"inflight": True}})
-            lt, ln = pms.adsb.position_with_ref(msg, self.REF_LAT, self.REF_LON)
-            self.adsb_collection.update_one({"icao":msg_icao}, {"$set":{"gndInfo.lat": lt}})
-            self.adsb_collection.update_one({"icao":msg_icao}, {"$set":{"gndInfo.long": ln}})
-        pass
+            self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"inGround": True}})
+            self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"inflight": True}})
+            
+            self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"gndInfo.lat": data[1]}})
+            self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"gndInfo.long": data[0]}})
+        
 
     def updateAerealSpeed(self, icao, speed):
         pass
@@ -152,22 +175,6 @@ class mongoDBClass:
     def deleteByIcao(self, icao):
         pass
 
-    def handleID(self, msg):
-        msg_icao = pms.adsb.icao(msg)
-        srch_res = self.adsb_collection.find_one({"icao":msg_icao})
-        if srch_res == None:
-            self.createEntry(msg)
-        else:
-            self.updateTimeStamp(msg_icao)
-
-    def updateTimeStamp(self, icao):
-        '''
-            just updates the TimeStamp of the icao's data received
-        '''
-        # plane = adsb_collection.find_one({{"icao":icao}})
-
-        pass
-
 
     def angleFromCoordinate(self, lat1,lon1,lat2,lon2) :
         '''
@@ -178,9 +185,12 @@ class mongoDBClass:
         angleDeg = Math.atan2(lon2 - lon1, lat2 - lat1) * 180 / Math.pi
         return angleDeg
 
-    def handle_ArealVelocity(self, msg):
+    def handle_ArealVelocity(self, data):
         # handle gndVelocity here, gndVelocity is not done
         '''
+        \nthe data praams receives a list [ icao, [speed, magHeading, verticalSpeed] ]
+
+        \n
         Four different subtypes are defined in bits 6-8 of ME field. 
         With subtypes 1 and 2, ground speeds of aircraft are reported. 
         With subtypes 3 and 4, aircraft true airspeed or indicated 
@@ -193,20 +203,14 @@ class mongoDBClass:
         '''
         # speed, magneticHeading, verticalSpeed , speedType = pms.adsb.velocity(msg)
         # ans = "speed: " + str(speed) + " " +"magHead: " + str(magneticHeading) + " " + "verticalSpeed: " + str(verticalSpeed) + " " + "speedType: " + str(speedType)
-        try :
-            data = pms.adsb.velocity(msg)
-            print(data)
-            msg_icao = pms.adsb.icao(msg)
-            if self.adsb_collection.find_one({"icao":msg_icao}) != None:
-                # update air speed
-                # pass
-                self.adsb_collection.update_one({"icao":msg_icao}, {"$set":{"flightInfo.velocity.speed": data[0]}})
-                self.adsb_collection.update_one({"icao":msg_icao}, {"$set":{"flightInfo.velocity.magHeading": data[1]}})
-                self.adsb_collection.update_one({"icao":msg_icao}, {"$set":{"flightInfo.velocity.verticalSpeed": data[2]}})
-                
-        except :
-            # figure out why error arises sometimes
-            print('error air speed, icao: ', msg_icao)
+        
+
+        if self.adsb_collection.find_one({"icao":data[0]}) != None:
+            
+            self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.velocity.speed": data[1][0]}})
+            self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.velocity.magHeading": data[1][1]}})
+            self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.velocity.verticalSpeed": data[1][2]}})
+        
 
     def handle_GndVelocity(self, msg):
         '''
@@ -220,6 +224,7 @@ class mongoDBClass:
         type:3,4 = True airspeed/indicated airspeed
         tupe:2,4 for supersonic aircraft, but they don't exist now, similat format to type 1,3
         '''
+        pass
 
         
 

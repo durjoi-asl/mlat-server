@@ -1,6 +1,10 @@
 import pyModeS as pms
 from abc import ABC, abstractmethod, abstractstaticmethod, ABCMeta
 
+# from DB
+from .DB_handler import mongoDBClass
+# import DB_handler
+
 class MsgHandler:
     
     def getTC(self):
@@ -18,14 +22,14 @@ class MsgHandler:
 
 class PlaneInfo(metaclass=ABCMeta): #class PlaneInfo(ABC):
 
-    db_Handler = "I handle mongoDB stuff"
+    db_Handler = mongoDBClass(0,0)
 
     @abstractmethod
     def checkType(self, msg):
         pass
     
     @abstractmethod
-    def decodeData(self, msg):
+    def decodeData(self, msg, ref_lat, ref_long):
         pass
 
     def callme(self):
@@ -51,7 +55,7 @@ class Idendity(PlaneInfo):
             print('yes got Identity msg')
             return True
 
-    def decodeData(self, msg):
+    def decodeData(self, msg, ref_lat, ref_long):
         '''
             decoding Identity message
         '''
@@ -61,10 +65,10 @@ class Idendity(PlaneInfo):
         category = pms.adsb.category(msg)
         callsign = pms.adsb.callsign(msg)
 
-        self.databaseHandler([category,callsign])
+        self.databaseHandler([msg_icao, category, callsign])
 
     def databaseHandler(self, data):
-        pass
+        self.db_Handler.handleID(data)
 
 class ArealPosition(PlaneInfo):
     '''
@@ -94,10 +98,10 @@ class ArealPosition(PlaneInfo):
         new_lt, new_ln = pms.adsb.airborne_position_with_ref( msg, ref_lat, ref_long)
         print("new AEREAL position is lat: {} ,long: {}".format(new_lt, new_ln))
 
-        self.databaseHandler([new_lt, new_ln])
+        self.databaseHandler([msg_icao, new_lt, new_ln])
 
     def databaseHandler(self, data):
-        pass
+        self.db_Handler.updateAerealPos(data)
 
 class GroundPosition(PlaneInfo):
     '''
@@ -120,11 +124,12 @@ class GroundPosition(PlaneInfo):
         msg_icao = pms.adsb.icao(msg)
         
         new_lt, new_ln = pms.adsb.position_with_ref( msg, ref_lat, ref_long)
-
         print("new GROUND position is lat: {} ,long: {}".format(new_lt, new_ln))
 
+        self.databaseHandler([msg_icao, new_lt, new_ln])
+
     def databaseHandler(self, data):
-        pass
+        self.db_Handler.updateGndPos(data)
 
 
 
@@ -145,31 +150,44 @@ class AirborneVelocity(PlaneInfo):
         '''
             decoding Airborne-Velocity message
         '''
-        
+        print("message is: ", msg)
         msg_icao = pms.adsb.icao(msg)
-        data = pms.adsb.velocity(msg) # this is a list => speed, magHeading, verticalSpeed
+        try:
+            velocity_data = pms.adsb.velocity(msg) # this is a list => speed, magHeading, verticalSpeed
+        except:
+            # figure out why error arises sometimes
+            print('error air speed, icao: ', msg_icao)
 
-        self.databaseHandler(data)
+        self.databaseHandler([msg_icao,velocity_data])
 
     def databaseHandler(self, data):
-        pass
+        self.db_Handler.handle_ArealVelocity(data)
+
 
 class PlaneInfoFactory:
 
     @staticmethod
-    def getInfoClass(msg):
+    def getInfoClass(msg, parm_lat, param_long):
         try:
             msgTC = pms.adsb.typecode(msg)
 
             if msgTC in range(9,19) or msgTC in range(20,23): #checking if TC == local aereal position
                 print("got aereal position msg")
-                return ArealPosition()
+                plane = ArealPosition()
+                plane.decodeData(msg, parm_lat, param_long)
+                # return ArealPosition()
             elif msgTC in  range(1,5): #identity typecode
-                return Idendity()
+                plane = AirborneVelocity()
+                plane.decodeData(msg, parm_lat, param_long)
+                # return Idendity()
             elif msgTC in range(5,9): #ground position
-                return GroundPosition()
+                plane = AirborneVelocity()
+                plane.decodeData(msg, parm_lat, param_long)
+                # return GroundPosition()
             elif msgTC == 19: #airborne velocity
-                return AirborneVelocity()
+                plane = AirborneVelocity()
+                plane.decodeData(msg, parm_lat, param_long)
+                # return AirborneVelocity()
             
         except AssertionError as _e:
             print(_e)
