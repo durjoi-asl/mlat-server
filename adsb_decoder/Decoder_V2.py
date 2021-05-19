@@ -64,10 +64,11 @@ class Idendity(PlaneInfo):
         
         category = pms.adsb.category(msg)
         callsign = pms.adsb.callsign(msg)
-
+        print("####################### for identity #######################")
         self.databaseHandler([msg_icao, category, callsign])
 
     def databaseHandler(self, data):
+        print("####################### saving identity #######################")
         self.db_Handler.handleID(data)
 
 class ArealPosition(PlaneInfo):
@@ -154,11 +155,12 @@ class AirborneVelocity(PlaneInfo):
         msg_icao = pms.adsb.icao(msg)
         try:
             velocity_data = pms.adsb.velocity(msg) # this is a list => speed, magHeading, verticalSpeed
+            self.databaseHandler([msg_icao,velocity_data])
         except:
             # figure out why error arises sometimes
             print('error air speed, icao: ', msg_icao)
 
-        self.databaseHandler([msg_icao,velocity_data])
+        # self.databaseHandler([msg_icao,velocity_data])
 
     def databaseHandler(self, data):
         self.db_Handler.handle_ArealVelocity(data)
@@ -177,7 +179,7 @@ class PlaneInfoFactory:
                 plane.decodeData(msg, parm_lat, param_long)
                 # return ArealPosition()
             elif msgTC in  range(1,5): #identity typecode
-                plane = AirborneVelocity()
+                plane = Idendity()
                 plane.decodeData(msg, parm_lat, param_long)
                 # return Idendity()
             elif msgTC in range(5,9): #ground position
@@ -185,7 +187,7 @@ class PlaneInfoFactory:
                 plane.decodeData(msg, parm_lat, param_long)
                 # return GroundPosition()
             elif msgTC == 19: #airborne velocity
-                plane = AirborneVelocity()
+                plane = AirborneVelocity()  
                 plane.decodeData(msg, parm_lat, param_long)
                 # return AirborneVelocity()
             

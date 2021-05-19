@@ -194,8 +194,8 @@ class TcpClient():
 
             print(f"[ACTIVE CONNECTIONS] {threading.activeCount()-1}")
             
-# client = TcpClient(["192.168.30.27", "192.168.101.3"], 10003, [[23.83614, 90.41637],[22.35443, 91.83391]])
-client = TcpClient([ "192.168.30.27"], 10003, [[23.83614, 90.41637],[22.35443, 91.83391]]) #first receiver Perfecto
+client = TcpClient(["192.168.30.27", "192.168.101.3"], 10003, [[23.83614, 90.41637],[22.35443, 91.83391]])
+# client = TcpClient([ "192.168.30.27"], 10003, [[23.83614, 90.41637],[22.35443, 91.83391]]) #first receiver Perfecto
 # client = TcpClient([ "192.168.101.3"], 10003, [[22.35443, 91.83391]]) #second receiver perfecto
 client.run()
 
