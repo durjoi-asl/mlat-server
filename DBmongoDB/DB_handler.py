@@ -69,7 +69,7 @@ class mongoDBClass:
     def getAllData(self):
         '''
             returns all the data stored in the DB as an array of dictionary/JSON,
-            meanto to be used by server to send JSON data
+            meant to be used by server to send JSON data
         '''
         
         cursor = self.adsb_collection.find()
@@ -171,7 +171,7 @@ class mongoDBClass:
 
     def angleFromCoordinate(self, lat1,lon1,lat2,lon2) :
         '''
-            returns angles in degress between to (lat,long) coordinates
+            returns angles in degrees between to (lat,long) coordinates
             /n (old_lat, old_lon, new_lat, new_lon)
         '''
         # angle in degrees

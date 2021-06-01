@@ -35,8 +35,6 @@ class PlaneInfo(metaclass=ABCMeta): #class PlaneInfo(ABC):
     def callme(self):
         print("hehe, you called me")
 
-    
-
     @abstractmethod
     def databaseHandler(self, data):
         pass

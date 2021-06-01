@@ -30,13 +30,14 @@ class MongoConnectionSingleton(IMongoConnection):
     def get_connection():
         print(f"## Name of DB: {MongoConnectionSingleton.__cluster_instance}")
         # print(f"Name of DB: {self.name}")
-    
-db = MongoConnectionSingleton('Saadat')
-print(db)
-db.get_connection()
 
-db2 = MongoConnectionSingleton.get_instance()
-print(db2)
+if __name__ == "__main__" :
+    db = MongoConnectionSingleton('Saadat')
+    print(db)
+    db.get_connection()
 
-db3 = MongoConnectionSingleton.get_instance()
-print(db3)
+    db2 = MongoConnectionSingleton.get_instance()
+    print(db2)
+
+    db3 = MongoConnectionSingleton.get_instance()
+    print(db3)
