@@ -1,7 +1,8 @@
-'''
-    Decods the raw bytes sent by signal receivers
-'''
+
 class Decoder: 
+    '''
+    Decods the raw bytes sent by signal receivers
+    '''
     def __init__(self, buffer):
         super(Decoder, self).__init__()
         self.buffer = buffer

@@ -26,7 +26,7 @@ class adsb_decoder:
     def getGlobalAirPos(self):
         '''
                # a pair of odd and even messages required to calculate the position
-            \n # not sure how to implement this so have not implemented this, DO NOT USE THIS
+               \n # not sure how to implement this so have not implemented this, DO NOT USE THIS
         '''
         
         print("--------- Global air position ---------")

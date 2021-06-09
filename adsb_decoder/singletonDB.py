@@ -2,6 +2,9 @@ from abc import ABCMeta, abstractstaticmethod
 from pymongo import MongoClient
 
 class IMongoConnection(metaclass=ABCMeta):
+    '''
+    MongoDB connection interface
+    '''
 
     @abstractstaticmethod
     def get_connection():

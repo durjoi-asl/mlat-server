@@ -1,7 +1,8 @@
 var dota;
 var myD = [];
 var ICAO_keys = [];
-const api_url = 'http://localhost:8001';
+// const api_url = 'http://localhost:8001';
+const api_url = 'http://192.168.50.12:8001';
 // const image = "https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png";
 const image = '/plane1.png' // the imgage we'll use as a marker
 // this creates a map on the web page and marks objects on it

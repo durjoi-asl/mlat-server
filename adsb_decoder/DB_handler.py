@@ -68,6 +68,9 @@ class mongoDBClass:
         self.adsb_collection.insert_one(post)
         
     def handleID(self, data):
+        '''
+            if ICAO of msg doesn't exist in DB then a new entry is created for that ICAO
+        '''
         # msg_icao = pms.adsb.icao(msg)
         srch_res = self.adsb_collection.find_one({"icao":data[0]})
         if srch_res == None:
@@ -88,7 +91,7 @@ class mongoDBClass:
     def getAllData(self):
         '''
             returns all the data stored in the DB as an array of dictionary/JSON,
-            meanto to be used by server to send JSON data
+            meant to be used by server to send JSON data
         '''
         
         cursor = self.adsb_collection.find()
@@ -178,7 +181,7 @@ class mongoDBClass:
 
     def angleFromCoordinate(self, lat1,lon1,lat2,lon2) :
         '''
-            returns angles in degress between to (lat,long) coordinates
+            returns angles in degress between two (lat,long) coordinates
             /n (old_lat, old_lon, new_lat, new_lon)
         '''
         # angle in degrees

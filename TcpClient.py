@@ -24,7 +24,7 @@ class TcpClient():
 
     def __init__(self, host, port, latLng=[[23.83588, 90.41611],[22.35443, 91.83391]], buffersize = 4096):
         '''
-            params are: hostIP, portNumber, buffersize, lantLng(2D array containing the lat and long positions of the hostIP addresses)
+            params are: hostIP, portNumber, buffersize, lantLng(2D array containing the lat and long positions of the hostIP addresses ie gound station's LatLon position)
             eg for latLng = [[23.83588, 90.41611],[22.35443, 91.83391]]
         '''
 
@@ -126,7 +126,7 @@ class TcpClient():
                     #     print("nuc_v ERROR=======   ",pms.adsb.nuc_v(msg[0]))
                     #     print("Version ERROR=======   ",pms.adsb.version(msg[0]))
                     # except:
-                    #     print("ooy teri")
+                    #     print("ERROR ERROR, something went wrong  ")
                     # remove from production code
 
                     if msg[0] in ADSB_MESSAGES.keys():
@@ -174,14 +174,25 @@ class TcpClient():
             # time.sleep(3) 
             
     def handle_thread(self):
-        
+        '''
+        creates on thread for each receiver/groundStation then appends it to self.threadList
+        '''
         
         for i, host_ip in enumerate(self.host): 
             newThread = threading.Thread(target=self.handle_connection, args=(host_ip, i+1))
             
             self.threadList.append(newThread)
     
+
     def run(self): 
+        '''
+        instantiates socket
+
+        initiates handle_thread
+
+        runs threads
+        '''
+        #creates the socket
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         # Preparing thread
@@ -194,8 +205,8 @@ class TcpClient():
 
             print(f"[ACTIVE CONNECTIONS] {threading.activeCount()-1}")
             
-client = TcpClient(["192.168.30.27", "192.168.101.3"], 10003, [[23.83614, 90.41637],[22.35443, 91.83391]])
-# client = TcpClient([ "192.168.30.27"], 10003, [[23.83614, 90.41637],[22.35443, 91.83391]]) #first receiver Perfecto
+# client = TcpClient(["192.168.30.27", "192.168.101.3"], 10003, [[23.83614, 90.41637],[22.35443, 91.83391]])
+client = TcpClient([ "192.168.30.27"], 10003, [[23.83614, 90.41637],[22.35443, 91.83391]]) #first receiver Perfecto
 # client = TcpClient([ "192.168.101.3"], 10003, [[22.35443, 91.83391]]) #second receiver perfecto
 client.run()
 
