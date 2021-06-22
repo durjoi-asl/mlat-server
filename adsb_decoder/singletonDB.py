@@ -35,6 +35,10 @@ class MongoConnectionSingleton(IMongoConnection):
         # print(f"Name of DB: {self.name}")
 
 if __name__ == "__main__" :
+    '''
+    not for deployment
+    just for testing
+    '''
     db = MongoConnectionSingleton('Saadat')
     print(db)
     db.get_connection()

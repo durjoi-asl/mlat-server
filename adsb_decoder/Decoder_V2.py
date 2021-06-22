@@ -53,7 +53,7 @@ class Idendity(PlaneInfo):
             print('yes got Identity msg')
             return True
 
-    def decodeData(self, msg, ref_lat, ref_long):
+    def decodeData(self, msg, ref_lat, ref_long, host):
         '''
             decoding Identity message
         '''
@@ -63,11 +63,11 @@ class Idendity(PlaneInfo):
         category = pms.adsb.category(msg)
         callsign = pms.adsb.callsign(msg)
         print("####################### for identity #######################")
-        self.databaseHandler([msg_icao, category, callsign])
+        self.databaseHandler([msg_icao, category, callsign], host)
 
-    def databaseHandler(self, data):
+    def databaseHandler(self, data, host):
         print("####################### saving identity #######################")
-        self.db_Handler.handleID(data)
+        self.db_Handler.handleID(data, host)
 
 class ArealPosition(PlaneInfo):
     '''
@@ -86,7 +86,7 @@ class ArealPosition(PlaneInfo):
             print('yes got Areal Position')
             return True
 
-    def decodeData(self, msg, ref_lat, ref_long):
+    def decodeData(self, msg, ref_lat, ref_long, host):
         '''
             decoding Areal Position message
             \n current_lat, currnet_long
@@ -97,10 +97,10 @@ class ArealPosition(PlaneInfo):
         new_lt, new_ln = pms.adsb.airborne_position_with_ref( msg, ref_lat, ref_long)
         print("new AEREAL position is lat: {} ,long: {}".format(new_lt, new_ln))
 
-        self.databaseHandler([msg_icao, new_lt, new_ln])
+        self.databaseHandler([msg_icao, new_lt, new_ln], host)
 
-    def databaseHandler(self, data):
-        self.db_Handler.updateAerealPos(data)
+    def databaseHandler(self, data, host):
+        self.db_Handler.updateAerealPos(data, host)
 
 class GroundPosition(PlaneInfo):
     '''
@@ -115,7 +115,7 @@ class GroundPosition(PlaneInfo):
             print('yes got Identity msg')
             return True
 
-    def decodeData(self, msg, ref_lat, ref_long):
+    def decodeData(self, msg, ref_lat, ref_long, host):
         '''
             decoding Ground Position message
         '''
@@ -125,10 +125,10 @@ class GroundPosition(PlaneInfo):
         new_lt, new_ln = pms.adsb.position_with_ref( msg, ref_lat, ref_long)
         print("new GROUND position is lat: {} ,long: {}".format(new_lt, new_ln))
 
-        self.databaseHandler([msg_icao, new_lt, new_ln])
+        self.databaseHandler([msg_icao, new_lt, new_ln], host)
 
-    def databaseHandler(self, data):
-        self.db_Handler.updateGndPos(data)
+    def databaseHandler(self, data, host):
+        self.db_Handler.updateGndPos(data, host)
 
 
 
@@ -145,7 +145,7 @@ class AirborneVelocity(PlaneInfo):
             print('yes got Identity msg')
             return True
 
-    def decodeData(self, msg, ref_lat, ref_long):
+    def decodeData(self, msg, ref_lat, ref_long, host):
         '''
             decoding Airborne-Velocity message
         '''
@@ -153,40 +153,40 @@ class AirborneVelocity(PlaneInfo):
         msg_icao = pms.adsb.icao(msg)
         try:
             velocity_data = pms.adsb.velocity(msg) # this is a list => speed, magHeading, verticalSpeed
-            self.databaseHandler([msg_icao,velocity_data])
+            self.databaseHandler([msg_icao,velocity_data], host)
         except:
             # figure out why error arises sometimes
             print('error air speed, icao: ', msg_icao)
 
         # self.databaseHandler([msg_icao,velocity_data])
 
-    def databaseHandler(self, data):
-        self.db_Handler.handle_ArealVelocity(data)
+    def databaseHandler(self, data, host):
+        self.db_Handler.handle_ArealVelocity(data, host)
 
 
 class PlaneInfoFactory:
 
     @staticmethod
-    def getInfoClass(msg, parm_lat, param_long):
+    def getInfoClass(msg, parm_lat, param_long, host):
         try:
             msgTC = pms.adsb.typecode(msg)
 
             if msgTC in range(9,19) or msgTC in range(20,23): #checking if TC == local aereal position
                 print("got aereal position msg")
                 plane = ArealPosition()
-                plane.decodeData(msg, parm_lat, param_long)
+                plane.decodeData(msg, parm_lat, param_long, host)
                 # return ArealPosition()
             elif msgTC in  range(1,5): #identity typecode
                 plane = Idendity()
-                plane.decodeData(msg, parm_lat, param_long)
+                plane.decodeData(msg, parm_lat, param_long, host)
                 # return Idendity()
             elif msgTC in range(5,9): #ground position
                 plane = AirborneVelocity()
-                plane.decodeData(msg, parm_lat, param_long)
+                plane.decodeData(msg, parm_lat, param_long, host)
                 # return GroundPosition()
             elif msgTC == 19: #airborne velocity
                 plane = AirborneVelocity()  
-                plane.decodeData(msg, parm_lat, param_long)
+                plane.decodeData(msg, parm_lat, param_long, host)
                 # return AirborneVelocity()
             
         except AssertionError as _e:

@@ -26,7 +26,7 @@ class mongoDBClass:
     adsb_collection = db['ADS-B']
 
 
-    def createEntry(self, msg):
+    def createEntry(self, msg, host=None):
         '''
         creates new entry for new icao address found
         '''
@@ -60,7 +60,8 @@ class mongoDBClass:
                     "speed": None,
                     "altitude" :None
                 },
-                "last_updated": datetime.datetime.now().strftime(self.TIME_FORMAT)
+                "last_updated": datetime.datetime.now().strftime(self.TIME_FORMAT),
+                "host": host
             }
 
         self.adsb_collection.insert_one(post)
@@ -78,14 +79,101 @@ class mongoDBClass:
         # for item in cursor:
         #     data.append(item)
         return json_data
+    
+    def getAllDataFormatted(self):
+        '''
+        '''
+        cursor = self.adsb_collection.find()
+        cursor = self.adsb_collection.aggregate(
+        [{
+            "$project":{
+                "_id": "$icao",
+                "cat": "$identity.category",
+                "clSgn": "$identity.callsign",
+                "fly": "$inflight",
+                "lat": {
+                    "$cond":{ "if": { "$eq": ["$inflight", "true"] }, "then": "$flightInfo.lat", "else": "$gndInfo.lat" }
+                    },
+                "lon": {
+                    "$cond":{ "if": { "$eq": ["$inflight", "true"] }, "then": "$flightInfo.long", "else": "$gndInfo.long" }
+                    },
+                # get speed if aircraft is in flight
+                "speed": {
+                    "$cond":{ "if": { "$eq": ["$inflight", "true"] }, "then": "$flightInfo.velocity.speed", "else": "$gndInfo.speed" }
+                    },
+                
+                "mag": {
+                        "$cond":[  { "$eq": ["$inflight", "true"]}, "$flightInfo.velocity.magHeading", "$$REMOVE"  ]
+                        },
+                "mag00": "$flightInfo.velocity.magHeading",
+                "vSpeed": "$flightInfo.velocity.verticalSpeed",
+                "alt": {
+                    "$cond":{ "if": { "$eq": ["$inflight", "true"] }, "then": "$flightInfo.angle", "else": "$gndInfo.angle" }
+                    },
+                "angle": "$flightInfo.angle",
+            }
+        }]
+        )
+        list_cur = list(cursor)
+        json_data = dumps(list_cur)
+        # for item in cursor:
+        #     data.append(item)
+        return json_data
 
-    def getPlaneByIcao(self):
-        pass
+    def getPlaneByIcao(self, msg_icao):
+        '''
+        this function queries the DB to find an airplane with mathinc icao number,
+        params: msg_icao(icao number)
+        '''
+        # search_res = self.adsb_collection.find({"icao":msg_icao})
+        # # self.adsb_collection
+        # #search_res = self.adsb_collection.find_one({"icao":msg_icao}) used this before but didn't work
+        # list_cur = list(search_res)
+        # json_data = dumps(list_cur)
+        # return json_data
+
+        cursor = self.adsb_collection.find()
+        cursor = self.adsb_collection.aggregate(
+        [
+            {"$match":{"icao":msg_icao}},
+            {
+            "$project":{
+                "_id": "$icao",
+                "cat": "$identity.category",
+                "clSgn": "$identity.callsign",
+                "fly": "$inflight",
+                "lat": {
+                    "$cond":{ "if": { "$eq": ["$inflight", True] }, "then": "$flightInfo.lat", "else": "$gndInfo.lat" }
+                    },
+                "lon": {
+                    "$cond":{ "if": { "$eq": ["$inflight", True] }, "then": "$flightInfo.long", "else": "$gndInfo.long" }
+                    },
+                "speed": {
+                    "$cond":{ "if": { "$eq": ["$inflight", True] }, "then": "$flightInfo.velocity.speed", "else": "$gndInfo.speed" }
+                    },
+                
+                "mag": {
+                        "$cond":[  { "$eq": ["$inflight", True]}, "$flightInfo.velocity.magHeading", "$$REMOVE"  ]
+                        },
+                # "mag00": "$flightInfo.velocity.magHeading",
+                "vSpeed": "$flightInfo.velocity.verticalSpeed",
+                "alt": {
+                    "$cond":{ "if": { "$eq": ["$inflight", True] }, "then": "$flightInfo.angle", "else": "$gndInfo.angle" }
+                    },
+                "angle": "$flightInfo.angle",
+            }
+        }]
+        )
+        list_cur = list(cursor)
+        json_data = dumps(list_cur)
+        # for item in cursor:
+        #     data.append(item)
+        return json_data
 
     def updateAerealPos(self, msg):
         '''
             updates areal position of an existing airplane in the DB
-        '''
+        ''' 
         lt, ln = pms.adsb.airborne_position_with_ref( msg, self.REF_LAT, self.REF_LON)
         msg_icao = pms.adsb.icao(msg)
         search_res = self.adsb_collection.find_one({"icao":msg_icao})

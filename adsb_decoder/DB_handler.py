@@ -28,7 +28,7 @@ class mongoDBClass:
     # adsb_collection = db['ADS-B']
 
 
-    def createIdentityEntry(self, data):
+    def createIdentityEntry(self, data, host):
         '''
         creates new entry for new icao address found
         '''
@@ -62,23 +62,24 @@ class mongoDBClass:
                     "speed": None,
                     "altitude" :None
                 },
-                "last_updated": datetime.datetime.now().strftime(self.TIME_FORMAT)
+                "last_updated": datetime.datetime.now().strftime(self.TIME_FORMAT),
+                "host": host
             }
 
         self.adsb_collection.insert_one(post)
         
-    def handleID(self, data):
+    def handleID(self, data, host):
         '''
             if ICAO of msg doesn't exist in DB then a new entry is created for that ICAO
         '''
         # msg_icao = pms.adsb.icao(msg)
         srch_res = self.adsb_collection.find_one({"icao":data[0]})
         if srch_res == None:
-            self.createIdentityEntry(data)
+            self.createIdentityEntry(data, host)
         else:
             self.updateTimeStamp(data[0])
 
-    def updateTimeStamp(self, icao):
+    def updateTimeStamp(self, icao): # complete this
         '''
             just updates the TimeStamp of the icao's data received
         '''
@@ -105,7 +106,7 @@ class mongoDBClass:
     def getPlaneByIcao(self):
         pass
 
-    def updateAerealPos(self, data):
+    def updateAerealPos(self, data, host):
         '''
             updates areal position of an existing airplane in the DB
             \n data param receives a list => [icao, decoded_new_lat, decoded_new_long]
@@ -113,7 +114,10 @@ class mongoDBClass:
         # lt, ln = pms.adsb.airborne_position_with_ref( msg, self.REF_LAT, self.REF_LON)
         # msg_icao = pms.adsb.icao(msg)
         search_res = self.adsb_collection.find_one({"icao":data[0]})
-        if search_res != None:
+        print("$$$$$$ DATA $$$$$$$$$")
+        print(search_res)
+        print("$$$$$$ DATA $$$$$$$$")
+        if search_res != None and list(self.adsb_collection.find({"icao":data[0]},{"_id":0, "host":1}))[0]["host"]==host :
             # update data if icao entry already exists
             print('Update areal data ==========')
             
@@ -136,7 +140,7 @@ class mongoDBClass:
             #do nothing if icao entry doesn't already exist
             pass
 
-    def updateGndPos(self, data):
+    def updateGndPos(self, data, host):
         '''
             updates GROUND position of an existing airplane in the DB
             \n data param receives a list => [icao, decoded_new_lat, decoded_new_long]
@@ -158,7 +162,7 @@ class mongoDBClass:
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"gndInfo.lat": data[1]}})
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"gndInfo.long": data[1]}})
             
-        else:
+        elif list(self.adsb_collection.find({"icao":data[0]},{"_id":0, "host":1}))[0]["host"]==host:
             # position already exists  should implement locally ambigious position later
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"inGround": True}})
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"inflight": True}})
@@ -167,7 +171,7 @@ class mongoDBClass:
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"gndInfo.long": data[0]}})
         
 
-    def updateAerealSpeed(self, icao, speed):
+    def updateAerealSpeed(self, icao, speed, host):
         pass
 
 
@@ -188,7 +192,7 @@ class mongoDBClass:
         angleDeg = Math.atan2(lon2 - lon1, lat2 - lat1) * 180 / Math.pi
         return angleDeg
 
-    def handle_ArealVelocity(self, data):
+    def handle_ArealVelocity(self, data, host):
         # handle gndVelocity here, gndVelocity is not done
         '''
         \nthe data praams receives a list [ icao, [speed, magHeading, verticalSpeed] ]
@@ -208,14 +212,14 @@ class mongoDBClass:
         # ans = "speed: " + str(speed) + " " +"magHead: " + str(magneticHeading) + " " + "verticalSpeed: " + str(verticalSpeed) + " " + "speedType: " + str(speedType)
         
 
-        if self.adsb_collection.find_one({"icao":data[0]}) != None:
+        if self.adsb_collection.find_one({"icao":data[0]}) != None and list(self.adsb_collection.find({"icao":data[0]},{"_id":0, "host":1}))[0]["host"]==host :
             
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.velocity.speed": data[1][0]}})
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.velocity.magHeading": data[1][1]}})
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.velocity.verticalSpeed": data[1][2]}})
         
 
-    def handle_GndVelocity(self, msg):
+    def handle_GndVelocity(self, msg,):
         '''
         Four different subtypes are defined in bits 6-8 of ME field. 
         With subtypes 1 and 2, ground speeds of aircraft are reported. 

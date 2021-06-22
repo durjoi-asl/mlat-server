@@ -5,12 +5,13 @@ import socket
 import threading 
 from Decoder import Decoder
 import pyModeS as pms
-import decrypt
+# import decrypt
 from jsonHandler import jsonHandlerClass
 import time
 from DBmongoDB.DB_handler import mongoDBClass
 
 from adsb_decoder.Decoder_V2 import PlaneInfoFactory
+
 ADSB_MESSAGES = {}
 DF_11 = {}
 MODE_AC = {}
@@ -260,7 +261,7 @@ class TcpClient():
                     #     print("nuc_v ERROR=======   ",pms.adsb.nuc_v(msg[0]))
                     #     print("Version ERROR=======   ",pms.adsb.version(msg[0]))
                     # except:
-                    #     print("ooy teri")
+                    #     print("something unexpected happened, ERROR")
                     # remove from production code
 
                     if msg[0] in ADSB_MESSAGES.keys():
