@@ -44,8 +44,8 @@ def getData():
         return data
         
 def getDBData():
-    data = mongo_obj.getAllData()
-    # data = mongo_obj.getAllDataFormatted() # new function new formatting
+    # data = mongo_obj.getAllData()
+    data = mongo_obj.getAllDataFormatted() # new function new formatting
     data = bytes(data, 'utf-8')
     print(data)
     print(type(data))
@@ -72,14 +72,14 @@ class getPlaneInfo(BaseHTTPRequestHandler):
         # self.wfile.write(getDBData())
         # self.wfile.write("hello world")
 
-        if query[0] == 'icao':
+        if query[0] == 'icao': # when icao is provided for specific plane info
             self.send_response(200)
             self.send_header('content-type', 'application/json')
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             self.wfile.write(getPlaneData(query[1]))
             
-        else:
+        else: # returns info of all plane data
             self.send_response(200)
             self.send_header('content-type', 'application/json')
             self.send_header('Access-Control-Allow-Origin', '*')
