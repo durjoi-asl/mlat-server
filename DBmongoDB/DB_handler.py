@@ -92,23 +92,23 @@ class mongoDBClass:
                 "clSgn": "$identity.callsign",
                 "fly": "$inflight",
                 "lat": {
-                    "$cond":{ "if": { "$eq": ["$inflight", "true"] }, "then": "$flightInfo.lat", "else": "$gndInfo.lat" }
+                    "$cond":{ "if": { "$eq": ["$inflight", True] }, "then": "$flightInfo.lat", "else": "$gndInfo.lat" }
                     },
                 "lon": {
-                    "$cond":{ "if": { "$eq": ["$inflight", "true"] }, "then": "$flightInfo.long", "else": "$gndInfo.long" }
+                    "$cond":{ "if": { "$eq": ["$inflight", True] }, "then": "$flightInfo.long", "else": "$gndInfo.long" }
                     },
                 # get speed if aircraft is in flight
                 "speed": {
-                    "$cond":{ "if": { "$eq": ["$inflight", "true"] }, "then": "$flightInfo.velocity.speed", "else": "$gndInfo.speed" }
+                    "$cond":{ "if": { "$eq": ["$inflight", True] }, "then": "$flightInfo.velocity.speed", "else": "$gndInfo.speed" }
                     },
                 
                 "mag": {
-                        "$cond":[  { "$eq": ["$inflight", "true"]}, "$flightInfo.velocity.magHeading", "$$REMOVE"  ]
+                        "$cond":[  { "$eq": ["$inflight", True]}, "$flightInfo.velocity.magHeading", "$$REMOVE"  ]
                         },
                 "mag00": "$flightInfo.velocity.magHeading",
                 "vSpeed": "$flightInfo.velocity.verticalSpeed",
                 "alt": {
-                    "$cond":{ "if": { "$eq": ["$inflight", "true"] }, "then": "$flightInfo.angle", "else": "$gndInfo.angle" }
+                    "$cond":{ "if": { "$eq": ["$inflight", True] }, "then": "$flightInfo.angle", "else": "$gndInfo.angle" }
                     },
                 "angle": "$flightInfo.angle"
             }
