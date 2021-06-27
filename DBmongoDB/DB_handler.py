@@ -110,7 +110,7 @@ class mongoDBClass:
                 "alt": {
                     "$cond":{ "if": { "$eq": ["$inflight", "true"] }, "then": "$flightInfo.angle", "else": "$gndInfo.angle" }
                     },
-                "angle": "$flightInfo.angle",
+                "angle": "$flightInfo.angle"
             }
         }]
         )
@@ -174,9 +174,13 @@ class mongoDBClass:
         '''
             updates areal position of an existing airplane in the DB
         ''' 
+
         lt, ln = pms.adsb.airborne_position_with_ref( msg, self.REF_LAT, self.REF_LON)
         msg_icao = pms.adsb.icao(msg)
         search_res = self.adsb_collection.find_one({"icao":msg_icao})
+        print('^^^^^^^ UPDATING AEREAL POS updateAerealPos(self, msg): ^^^^^^^')
+        print('message: ', msg)
+        print('search_res: ', search_res)
         if search_res != None:
             # update data if icao entry already exists
             print('Update areal data ==========')
