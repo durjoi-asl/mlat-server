@@ -3,7 +3,9 @@ import pyModeS as pms
 import datetime
 import math as Math
 from bson.json_util import dumps
+from pymongo.read_preferences import Primary
 from .singletonDB import MongoConnectionSingleton
+from numpy import arctan2,sin,cos,degrees
 
 
 class mongoDBClass:
@@ -109,7 +111,7 @@ class mongoDBClass:
     def updateAerealPos(self, data, host):
         '''
             updates areal position of an existing airplane in the DB
-            \n data param receives a list => [icao, decoded_new_lat, decoded_new_long]
+            \n data param receives a list => [icao, decoded_new_lat, decoded_new_long, alt]
         '''
         # lt, ln = pms.adsb.airborne_position_with_ref( msg, self.REF_LAT, self.REF_LON)
         # msg_icao = pms.adsb.icao(msg)
@@ -123,18 +125,18 @@ class mongoDBClass:
             
             current_Lat = search_res['flightInfo']['lat']
             current_Long = search_res['flightInfo']['long']
-
+            
             
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"inflight": True}})
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.lat": data[1]}})
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.long": data[2]}})
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.prevPos.lat": current_Lat}})
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.prevPos.long": current_Long}})
-
+            self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.altitude":data[3]}}) #data[3]==altitude
             if current_Lat != None:
                 # calculate angle and make entry only if current_lat(ie previous lat now) exists
                 newAngle = self.angleFromCoordinate(current_Lat, current_Long, data[1], data[2])
-                self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.angle": newAngle}})
+                self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.angle": int(newAngle)}})
 
         else:
             #do nothing if icao entry doesn't already exist
@@ -188,8 +190,20 @@ class mongoDBClass:
             returns angles in degress between two (lat,long) coordinates
             /n (old_lat, old_lon, new_lat, new_lon)
         '''
+        print("@@@@@@@@@#### calculate angle ######@@@@@@@@@@@")
+        print(lat1, lon1, lat2, lon2)
         # angle in degrees
-        angleDeg = Math.atan2(lon2 - lon1, lat2 - lat1) * 180 / Math.pi
+        # angleDeg = Math.atan2(lon2 - lon1, lat2 - lat1) * 180 / Math.pi
+        
+        dL =Math.radians(lon2-lon1)
+        lat1 = Math.radians(lat1)
+        lat2 = Math.radians(lat2)
+        lon1 = Math.radians(lon1)
+        lon2 = Math.radians(lon2)
+        X = cos(lat2)*sin(dL)
+        Y = cos(lat1)*sin(lat2) - sin(lat1)*cos(lat2)*cos(dL)
+        bearing = arctan2(X,Y)
+        angleDeg = degrees(bearing)
         return angleDeg
 
     def handle_ArealVelocity(self, data, host):
@@ -241,7 +255,7 @@ class mongoDBClass:
 
         if msgTC in range(9,19) or msgTC in range(20,23): #checking if TC == local aereal position
             print('not updataing yet...')
-            self.updateAerealPos(msg)
+            self.updateAerealPos(msg) #msg structure => []
         elif msgTC in  range(1,5): #identity typecode
             self.handleID(msg)
         elif msgTC in range(5,9): #ground position

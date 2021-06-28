@@ -93,11 +93,11 @@ class ArealPosition(PlaneInfo):
         '''
         
         msg_icao = pms.adsb.icao(msg)
-        
+        alt = pms.adsb.altitude(msg)
         new_lt, new_ln = pms.adsb.airborne_position_with_ref( msg, ref_lat, ref_long)
         print("new AEREAL position is lat: {} ,long: {}".format(new_lt, new_ln))
 
-        self.databaseHandler([msg_icao, new_lt, new_ln], host)
+        self.databaseHandler([msg_icao, new_lt, new_ln, alt], host)
 
     def databaseHandler(self, data, host):
         self.db_Handler.updateAerealPos(data, host)

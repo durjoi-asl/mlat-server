@@ -108,7 +108,7 @@ class mongoDBClass:
                 "mag00": "$flightInfo.velocity.magHeading",
                 "vSpeed": "$flightInfo.velocity.verticalSpeed",
                 "alt": {
-                    "$cond":{ "if": { "$eq": ["$inflight", True] }, "then": "$flightInfo.angle", "else": "$gndInfo.angle" }
+                    "$cond":{ "if": { "$eq": ["$inflight", True] }, "then": "$flightInfo.altitude", "else": "$gndInfo.angle" }
                     },
                 "angle": "$flightInfo.angle"
             }
@@ -158,7 +158,7 @@ class mongoDBClass:
                 # "mag00": "$flightInfo.velocity.magHeading",
                 "vSpeed": "$flightInfo.velocity.verticalSpeed",
                 "alt": {
-                    "$cond":{ "if": { "$eq": ["$inflight", True] }, "then": "$flightInfo.angle", "else": "$gndInfo.angle" }
+                    "$cond":{ "if": { "$eq": ["$inflight", True] }, "then": "$flightInfo.altitude", "else": "$gndInfo.angle" }
                     },
                 "angle": "$flightInfo.angle",
             }
@@ -176,6 +176,7 @@ class mongoDBClass:
         ''' 
 
         lt, ln = pms.adsb.airborne_position_with_ref( msg, self.REF_LAT, self.REF_LON)
+        alt = pms.adsb.altitude(msg)
         msg_icao = pms.adsb.icao(msg)
         search_res = self.adsb_collection.find_one({"icao":msg_icao})
         print('^^^^^^^ UPDATING AEREAL POS updateAerealPos(self, msg): ^^^^^^^')
