@@ -38,7 +38,7 @@ class Users(sqlDB.Model):
     name = sqlDB.Column(sqlDB.String(100))
     password = sqlDB.Column(sqlDB.String(100))
     admin = sqlDB.Column(sqlDB.Boolean)
-    # role = sqlDB.Column(sqlDB.)
+    role = sqlDB.Column(sqlDB.Integer)
 
     # def __init__(self, name, email) -> None:
     #     self.name = name
@@ -79,6 +79,24 @@ def token_required(f): #decorator for authorization
         return f(current_user, *args, **kwargs)
     
     return decorated
+
+def get_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        if 'x-access-token' in request.headers:
+            token = request.headers['x-access-token']
+        
+        if not token:
+            return jsonify({'message': 'token is missing'}), 401
+
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            print('token property decoded: ', data)
+            current_user = Users.query.filter_by(public_id=data['public_id']).first()
+        except:
+            return jsonify({'message': 'Token is invalid'}), 401
+        
 
 #######################
 
@@ -177,9 +195,21 @@ def testAuth(current_user):
     user = {
         "name":current_user.name,
         "admin":current_user.admin,
-        "password":current_user.password
+        "password":"woops you didn't think you'll be able to see this did you? :p"
     }
     return jsonify({"testAPI":"testing", "authoriaztion":"working properly","user who called this":user})
+
+@app.route('/test_auth_role')
+@token_required
+def testAuthRole(current_user):
+    if current_user.role == 2:
+        user = {
+            "name":current_user.name,
+            "admin":current_user.admin,
+            "role" : current_user.role,
+            "password":"woops you didn't think you'll be able to see this did you? :p"
+        }
+    return jsonify({"testAPI":"testing roles", "authoriaztion":"working properly","user who called this":user})
 
 @app.route("/user/", methods=["GET"]) ## implement authorization and authentication to show all users 
 def get_all_users():
@@ -192,6 +222,7 @@ def get_all_users():
         user_data['name'] = user.name
         user_data['password'] = user.password
         user_data['admin'] = user.admin
+        user_data['role'] = user.role
 
         output.append(user_data)
     return jsonify({'users': output})
@@ -201,8 +232,9 @@ def create_user():
     print('in create user')
     data = request.get_json()
     hashed_password = generate_password_hash(data['password'], method='sha256')
-
-    new_user = Users(public_id=str(uuid.uuid4()), name=data['name'], password=hashed_password, admin=False)
+    print('to create, admin level:')
+    print(data['admin'])
+    new_user = Users(public_id=str(uuid.uuid4()), name=data['name'], password=hashed_password, admin=data['admin'], role=int(data['role']))
     sqlDB.session.add(new_user)
     sqlDB.session.commit()
     return jsonify({'message':'new user created', "name":data['name'] })
@@ -233,6 +265,36 @@ def delete_user(public_id):
     sqlDB.session.commit()
 
     return jsonify({"message": "the user has been deleted"})
+
+@app.route("/user/<public_id>", methods=["PUT"])
+@token_required
+def updateUser(current_user, public_id):
+    if current_user.public_id != public_id and  current_user.admin != True:
+        print(current_user.admin)
+        return jsonify({"message": "you don't have authorization"})
+    else:
+        user2update = Users.query.filter_by(public_id=public_id).first()
+        if not user2update:
+            return jsonify({"message":"no user found"})
+
+        data = request.get_json()
+        user2update.name = data['name']
+        # user2update.password = data['password']
+        sqlDB.session.commit()
+        return jsonify({"message": "the user has been edited"})
+
+
+
+@app.route("/signup/", methods=["POST"]) #normal user role=0, admin=False
+def sign_up():
+    data = request.get_json()
+    hashed_password = generate_password_hash(data['password'], method='sha256')
+
+    new_user = Users(public_id=str(uuid.uuid4()), name=data['name'], password=hashed_password, admin=False, role=0)
+    sqlDB.session.add(new_user)
+    sqlDB.session.commit()
+    return jsonify({'message':'new user created', "name":data['name'] })
+    
 
 @app.route("/login/")
 def login():
