@@ -3,23 +3,36 @@ from os import name
 import bson
 from flask import Flask, json, jsonify, Response, request, make_response
 from flask_sock import Sock
+from flask_sqlalchemy.model import Model
 import pymongo
 from pymongo.common import SERVER_SELECTION_TIMEOUT
 from bson.json_util import dumps
 from flask_sqlalchemy import SQLAlchemy
 import uuid
+from sqlalchemy.orm import backref
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt 
 import datetime
 from functools import wraps
 
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
+
+# from flask_migrate import Migrate
+# from flask_script import Manager
+
 app = Flask(__name__)
 app.secret_key = "hello"
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///users.sqllite3"
+# app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///users.sqllite3"
+app.config["SQLALCHEMY_DATABASE_URI"] = 'postgresql://postgres:postgres@localhost/testThings'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 sock = Sock(app) # for socket streaming
 
 sqlDB = SQLAlchemy(app)
+admin = Admin(app)
+
+# migrate = Migrate(app, sqlDB)
+# manager = Manager(app)
 
 MONGOHOST = "localhost" # address where mongoDB is hosted
 MONGOPORT = 27017 # port of mondoDB hosting
@@ -32,17 +45,43 @@ DEBUGTRUTH = True # whether in debug mode or not
 # app.secret_key = "amar secret" # NOT FOR PRODUCTION, JUST FOR TESTING
 app.config['SECRET_KEY'] = 'amar secret'
 
+users_role = sqlDB.Table('user_role',
+            sqlDB.Column('user_id',sqlDB.Integer, sqlDB.ForeignKey('users.id')),
+            sqlDB.Column('role_id', sqlDB.Integer, sqlDB.ForeignKey('role.role_id')) )
+
 class Users(sqlDB.Model):
     id = sqlDB.Column( sqlDB.Integer, primary_key=True)
     public_id = sqlDB.Column(sqlDB.String(50), unique=True)
     name = sqlDB.Column(sqlDB.String(100))
     password = sqlDB.Column(sqlDB.String(100))
     admin = sqlDB.Column(sqlDB.Boolean)
-    role = sqlDB.Column(sqlDB.Integer)
+    roles = sqlDB.relationship('Role', secondary=users_role, backref=sqlDB.backref('persons', lazy='dynamic'))
 
     # def __init__(self, name, email) -> None:
     #     self.name = name
     #     self.email = email
+
+
+role_permission = sqlDB.Table('role_permission',
+                sqlDB.Column('role_id', sqlDB.Integer, sqlDB.ForeignKey('role.role_id')),
+                sqlDB.Column('permission_id', sqlDB.Integer, sqlDB.ForeignKey('permission.permission_id')) )
+
+
+class Role(sqlDB.Model):
+    role_id = sqlDB.Column( sqlDB.Integer, primary_key=True, unique=True)
+    role = sqlDB.Column( sqlDB.String(100) )
+    permissions = sqlDB.relationship('Permission', secondary=role_permission, backref=sqlDB.backref('roles', lazy='dynamic'))
+    # tag = sqlDB.Column( sqlDB.String(50) )
+
+
+class Permission(sqlDB.Model):
+    permission_id = sqlDB.Column( sqlDB.Integer, primary_key=True, unique=True )
+    permission  = sqlDB.Column( sqlDB.String(100))
+    # tag =  sqlDB.Column( sqlDB.String(50))
+
+admin.add_view(ModelView(Users, sqlDB.session))
+admin.add_view(ModelView(Role, sqlDB.session))
+admin.add_view(ModelView(Permission, sqlDB.session))
 
 
 try: # establishing mongoDB connection
@@ -199,9 +238,10 @@ def testAuth(current_user):
     }
     return jsonify({"testAPI":"testing", "authoriaztion":"working properly","user who called this":user})
 
-@app.route('/test_auth_role')
+@app.route('/test_auth_role') #finish this
 @token_required
 def testAuthRole(current_user):
+    # print(current_user)
     if current_user.role == 2:
         user = {
             "name":current_user.name,
@@ -210,6 +250,8 @@ def testAuthRole(current_user):
             "password":"woops you didn't think you'll be able to see this did you? :p"
         }
     return jsonify({"testAPI":"testing roles", "authoriaztion":"working properly","user who called this":user})
+
+
 
 @app.route("/user/", methods=["GET"]) ## implement authorization and authentication to show all users 
 def get_all_users():
@@ -222,7 +264,7 @@ def get_all_users():
         user_data['name'] = user.name
         user_data['password'] = user.password
         user_data['admin'] = user.admin
-        user_data['role'] = user.role
+        # user_data['role'] = user.role
 
         output.append(user_data)
     return jsonify({'users': output})
@@ -234,7 +276,7 @@ def create_user():
     hashed_password = generate_password_hash(data['password'], method='sha256')
     print('to create, admin level:')
     print(data['admin'])
-    new_user = Users(public_id=str(uuid.uuid4()), name=data['name'], password=hashed_password, admin=data['admin'], role=int(data['role']))
+    new_user = Users(public_id=str(uuid.uuid4()), name=data['name'], password=hashed_password, admin=data['admin'])
     sqlDB.session.add(new_user)
     sqlDB.session.commit()
     return jsonify({'message':'new user created', "name":data['name'] })
