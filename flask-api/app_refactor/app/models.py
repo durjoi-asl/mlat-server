@@ -10,9 +10,11 @@ import datetime
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 
-sqlDB = SQLAlchemy(app)
-
+from app import sqlDB 
+# from app import adsb_collection
 admin = Admin(app)
+
+
 
 users_role = sqlDB.Table('user_role',
             sqlDB.Column('user_id',sqlDB.Integer, sqlDB.ForeignKey('users.id')),

@@ -284,7 +284,7 @@ def get_all_users():
         user_data['name'] = user.name
         user_data['password'] = user.password
         user_data['admin'] = user.admin
-        # user_data['role'] = user.role
+        user_data['roles'] = user.roles
 
         output.append(user_data)
     return jsonify({'users': output})
@@ -382,14 +382,34 @@ def login():
     
     return make_response('could not verify', 401, {"WWW-Authenticate":'Basic realm="Login required!"'}) # if given name & pass don't match
 
-@app.route('/addRolesToUser/<userId>', methods=['POST'])
-def addRolesToUser():
+@app.route('/addRolesToUser/<user_id>', methods=['POST'])
+def addRolesToUser(user_id):
+    data = request.get_json()
+    role = data['roles']
+    # add role to user_id
+    
     return 'addRoles'
+
+@app.route('/roles/')
+def getAllRoles():
+    
+    roles = Role.query.all()
+    output = []
+    
+    for role in roles:
+        role_data = {}
+        role_data['role_id'] = role.role_id
+        role_data['role'] = role.role
+        # if role.permission:
+        # role_data['permission'] = role.permission
+        output.append(role_data)
+
+    return jsonify({"roles": output})
 
 @app.route('/role/<role_id>')
 def getRoles(role_id):
     
-    role = Role.query.filter_by(role_id=role_id).first()
+    role = Role.query.filter_by(role_id = role_id).first()
     if not role:
         return jsonify({"message": "no user found"})
     
@@ -398,43 +418,96 @@ def getRoles(role_id):
     role_data['role'] = role.role
 
     return jsonify({"user": role_data})
+
+
     
 
 @app.route('/createRole/', methods=["POST"])
 def createRole():
     data = request.get_json()
-    print(data)
-    # return ("aka")
-    print(data)
+    
     new_role = Role(role=data['role'])
     sqlDB.session.add(new_role)
     sqlDB.session.commit()
-    print(new_role.role_id)
+
     return jsonify({'new_role_created': data['role'], 'role_id': new_role.role_id})
 
-@app.route('/updateRole')
-def updateRole():
-    return 'updateRole'
+@app.route('/updateRole/<role_id>', methods=['PUT'])
+def updateRole(role_id):
 
-@app.route('/deleteRole')
-def deleteRole():
-    return 'deleteRole'
+    role2update = Role.query.filter_by(role_id = role_id).first()
+    if not role2update:
+        return jsonify({"message":"no role found"})
+    
+    data = request.get_json()
+    role2update.role = data['role']
+    sqlDB.session.commit()
+
+    return jsonify({"message": "the role has been edited"})
+
+@app.route('/deleteRole/<role_id>', methods=["DELETE"])
+def deleteRole(role_id):
+
+    role = Role.query.filter_by(role_id=role_id)
+    if not role:
+        return jsonify({"message":"no role found"})
+
+    sqlDB.session.delete(role)
+    sqlDB.session.commit()
+
+    return jsonify({"message": "the role has been deleted"})
+    
 
 @app.route('/addPermissionsToRole/<roleId>')
 def addPermissionsToRole():
     return 'addPermissionsToRole'
 
-@app.route('/permissions')
+@app.route('/permissions/')
 def getPermissions():
-    return 'roles'
+    permissions = Permission.query.all()
+    output = []
 
-@app.route('/createPermission')
+    for perm in permissions:
+        perm_data = {}
+        perm_data['permission_id'] = perm.permission_id
+        perm_data['permission'] = perm.permission
+        output.append(perm_data)
+
+    return jsonify(output)
+
+@app.route('/permission/<permission_id>')
+def getPermission(permission_id):
+    permission = Permission.query.filter_by(permission_id=permission_id).first()
+
+    if not permission:
+        return jsonify({"message": "no permission found"})
+    
+    permission_data = {}
+    permission_data['permission_id'] =  permission.permission_id
+    permission_data['permission'] =  permission.permission
+
+    return jsonify(permission_data)
+
+@app.route('/permission/create/', methods=["POST"])
 def createPermission():
-    return 'roles'
+    data = request.get_json()
+    new_permission = Permission(permission=data['permission'])
+    sqlDB.session.add(new_permission)
+    sqlDB.session.commit()
+    return jsonify({'message':'new permission created', 'permission': data['permission']})
 
-@app.route('/updatePermission')
-def updatePermission():
-    return 'updatePermission'
+@app.route('/updatePermission/<permission_id>', methods=["PUT"])
+def updatePermission(permission_id):
+    data = request.get_json()
+   
+    find_perm = Permission.query.filter_by(permission_id=permission_id).first()
+    if not find_perm:
+        return jsonify({'message':'no permission found'})
+    
+    find_perm.permission = data['permission']
+    sqlDB.session.commit()
+    
+    return jsonify({'message':'permission updated', 'new permission':find_perm})
 
 @app.route('/deletePermission')
 def deletePermission():
