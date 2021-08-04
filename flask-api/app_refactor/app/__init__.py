@@ -10,6 +10,8 @@ app.config.from_object(Config)
 
 import pymongo
 sqlDB = SQLAlchemy(app)
+sqlDB.create_all()
+
 migrate = Migrate(app, sqlDB)
 
 MONGOHOST = "localhost" # address where mongoDB is hosted

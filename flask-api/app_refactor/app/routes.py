@@ -312,7 +312,7 @@ def getRoles(role_id):
 
     
 
-@app.route('/createRole/', methods=["POST"])
+@app.route('/role/create/', methods=["POST"])
 def createRole():
     data = request.get_json()
     
@@ -322,7 +322,7 @@ def createRole():
 
     return jsonify({'new_role_created': data['role'], 'role_id': new_role.role_id})
 
-@app.route('/updateRole/<role_id>', methods=['PUT'])
+@app.route('/role/update/<role_id>', methods=['PUT'])
 def updateRole(role_id):
 
     role2update = Role.query.filter_by(role_id = role_id).first()
@@ -335,7 +335,7 @@ def updateRole(role_id):
 
     return jsonify({"message": "the role has been edited"})
 
-@app.route('/deleteRole/<role_id>', methods=["DELETE"])
+@app.route('/role/delete/<role_id>', methods=["DELETE"])
 def deleteRole(role_id):
 
     role = Role.query.filter_by(role_id=role_id)
@@ -348,7 +348,7 @@ def deleteRole(role_id):
     return jsonify({"message": "the role has been deleted"})
     
 
-@app.route('/addPermissionsToRole/<roleId>')
+@app.route('/addPermissionsToRole/<roleId>', methods=["POST"])
 def addPermissionsToRole():
     return 'addPermissionsToRole'
 
@@ -386,7 +386,7 @@ def createPermission():
     sqlDB.session.commit()
     return jsonify({'message':'new permission created', 'permission': data['permission']})
 
-@app.route('/updatePermission/<permission_id>', methods=["PUT"])
+@app.route('/permission/update/<permission_id>', methods=["PUT"])
 def updatePermission(permission_id):
     data = request.get_json()
    
@@ -399,6 +399,6 @@ def updatePermission(permission_id):
     
     return jsonify({'message':'permission updated', 'new permission':find_perm})
 
-@app.route('/deletePermission')
+@app.route('/permission/delete/<permission_id>')
 def deletePermission():
     return 'deleteRole'

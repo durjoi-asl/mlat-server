@@ -70,9 +70,9 @@ def createPermissions():
 # print(Users.query.all())
 
 if __name__ == "__main__":
-    createUsers()
-    createRoles()
-    createPermissions()
+    # createUsers()
+    # createRoles()
+    # createPermissions()
 
     # print(Role.query.all()[0].role)
     pass
