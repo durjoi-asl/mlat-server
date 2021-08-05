@@ -12,6 +12,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 import uuid
 
+from flask_cors import CORS, cross_origin
+CORS(app, support_credentials=True)
+
+
 
 def token_required(f): #decorator for authorization
     @wraps(f)
@@ -54,6 +58,7 @@ def get_auth(f):
             return jsonify({'message': 'Token is invalid'}), 401
 
 @app.route("/", methods=["GET"]) # this endpoint returns all data stored in DB and arranges t
+@cross_origin(supports_credentials=True)
 def getAllPlanes(): 
     
     data_all = adsb_collection.aggregate( # AGGRETRATE FUNCTION calls all data avilable in ADSB DB collection, then arranges accordingly
@@ -102,6 +107,7 @@ def getAllPlanes():
     )
 
 @app.route('/icao/<msg_icao>/', methods=["GET"]) #specific palenInfo endpoint, parameter msg_icao is the icao
+@cross_origin(supports_credentials=True)
 def getIcaoPlane(msg_icao):
     # msg_icao = "70E076"
     print(msg_icao)
@@ -143,6 +149,7 @@ def getIcaoPlane(msg_icao):
     )
 
 @app.route('/test/auth')
+@cross_origin(supports_credentials=True)
 @token_required
 def testAuth(current_user):
     user = {
@@ -153,6 +160,7 @@ def testAuth(current_user):
     return jsonify({"testAPI":"testing", "authoriaztion":"working properly","user who called this":user})
 
 @app.route('/test_auth_role') #finish this
+@cross_origin(supports_credentials=True)
 @token_required
 def testAuthRole(current_user):
     # print(current_user)
@@ -168,6 +176,7 @@ def testAuthRole(current_user):
 
 
 @app.route("/user/", methods=["GET"]) ## implement authorization and authentication to show all users 
+@cross_origin(supports_credentials=True)
 def get_all_users():
     users = Users.query.all()
     output = []
@@ -184,6 +193,7 @@ def get_all_users():
     return jsonify({'users': output})
 
 @app.route("/user/", methods=["POST"]) ## create new user
+@cross_origin(supports_credentials=True)
 def create_user():
     print('in create user')
     data = request.get_json()
@@ -196,6 +206,7 @@ def create_user():
     return jsonify({'message':'new user created', "name":data['name'] })
 
 @app.route("/user/<public_id>", methods=["GET"])
+@cross_origin(supports_credentials=True)
 def get_one_user(public_id):
 
     user = Users.query.filter_by(public_id=public_id).first()
@@ -211,6 +222,7 @@ def get_one_user(public_id):
     return jsonify({"user": user_data})
 
 @app.route("/user/<public_id>", methods=["DELETE"])
+@cross_origin(supports_credentials=True)
 def delete_user(public_id):
 
     user = Users.query.filter_by(public_id=public_id).first()
@@ -223,6 +235,7 @@ def delete_user(public_id):
     return jsonify({"message": "the user has been deleted"})
 
 @app.route("/user/<public_id>", methods=["PUT"])
+@cross_origin(supports_credentials=True)
 @token_required
 def updateUser(current_user, public_id):
     if current_user.public_id != public_id and  current_user.admin != True:
@@ -242,6 +255,7 @@ def updateUser(current_user, public_id):
 
 
 @app.route("/signup/", methods=["POST"]) #normal user role=0, admin=False
+@cross_origin(supports_credentials=True)
 def sign_up():
     data = request.get_json()
     hashed_password = generate_password_hash(data['password'], method='sha256')
@@ -253,6 +267,7 @@ def sign_up():
     
 
 @app.route("/login/")
+@cross_origin(supports_credentials=True)
 def login():
     auth = request.authorization
     print('auth: ', auth)
@@ -277,6 +292,7 @@ def login():
     return make_response('could not verify', 401, {"WWW-Authenticate":'Basic realm="Login required!"'}) # if given name & pass don't match
 
 @app.route('/addRolesToUser/', methods=['POST'])
+@cross_origin(supports_credentials=True)
 def addRolesToUser():
     return 'addRoles'
 
@@ -297,6 +313,7 @@ def getAllRoles():
     return jsonify({"roles": output})
 
 @app.route('/role/<role_id>')
+@cross_origin(supports_credentials=True)
 def getRoles(role_id):
     
     role = Role.query.filter_by(role_id = role_id).first()
@@ -313,6 +330,7 @@ def getRoles(role_id):
     
 
 @app.route('/role/create/', methods=["POST"])
+@cross_origin(supports_credentials=True)
 def createRole():
     data = request.get_json()
     
@@ -323,6 +341,7 @@ def createRole():
     return jsonify({'new_role_created': data['role'], 'role_id': new_role.role_id})
 
 @app.route('/role/update/<role_id>', methods=['PUT'])
+@cross_origin(supports_credentials=True)
 def updateRole(role_id):
 
     role2update = Role.query.filter_by(role_id = role_id).first()
@@ -336,6 +355,7 @@ def updateRole(role_id):
     return jsonify({"message": "the role has been edited"})
 
 @app.route('/role/delete/<role_id>', methods=["DELETE"])
+@cross_origin(supports_credentials=True)
 def deleteRole(role_id):
 
     role = Role.query.filter_by(role_id=role_id)
@@ -349,10 +369,12 @@ def deleteRole(role_id):
     
 
 @app.route('/addPermissionsToRole/<roleId>', methods=["POST"])
+@cross_origin(supports_credentials=True)
 def addPermissionsToRole():
     return 'addPermissionsToRole'
 
 @app.route('/permissions/')
+@cross_origin(supports_credentials=True)
 def getPermissions():
     permissions = Permission.query.all()
     output = []
@@ -366,6 +388,7 @@ def getPermissions():
     return jsonify(output)
 
 @app.route('/permission/<permission_id>')
+@cross_origin(supports_credentials=True)
 def getPermission(permission_id):
     permission = Permission.query.filter_by(permission_id=permission_id).first()
 
@@ -379,6 +402,7 @@ def getPermission(permission_id):
     return jsonify(permission_data)
 
 @app.route('/permission/create/', methods=["POST"])
+@cross_origin(supports_credentials=True)
 def createPermission():
     data = request.get_json()
     new_permission = Permission(permission=data['permission'])
@@ -387,6 +411,7 @@ def createPermission():
     return jsonify({'message':'new permission created', 'permission': data['permission']})
 
 @app.route('/permission/update/<permission_id>', methods=["PUT"])
+@cross_origin(supports_credentials=True)
 def updatePermission(permission_id):
     data = request.get_json()
    
@@ -400,5 +425,6 @@ def updatePermission(permission_id):
     return jsonify({'message':'permission updated', 'new permission':find_perm})
 
 @app.route('/permission/delete/<permission_id>')
+@cross_origin(supports_credentials=True)
 def deletePermission():
     return 'deleteRole'
