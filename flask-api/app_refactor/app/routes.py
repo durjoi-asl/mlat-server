@@ -13,7 +13,7 @@ import datetime
 import uuid
 
 from flask_cors import CORS, cross_origin
-CORS(app, support_credentials=True)
+CORS(app)
 
 
 
@@ -269,6 +269,7 @@ def sign_up():
 @app.route("/login/")
 @cross_origin(supports_credentials=True)
 def login():
+    print('hello')
     auth = request.authorization
     print('auth: ', auth)
     print('req: ', request.authorization)
