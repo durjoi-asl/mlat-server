@@ -59,11 +59,11 @@ class Idendity(PlaneInfo):
         '''
 
         msg_icao = pms.adsb.icao(msg)
-        
+        tc = pms.adsb.typecode(msg)
         category = pms.adsb.category(msg)
         callsign = pms.adsb.callsign(msg)
         print("####################### for identity #######################")
-        self.databaseHandler([msg_icao, category, callsign], host)
+        self.databaseHandler([msg_icao, category, callsign, tc], host)
 
     def databaseHandler(self, data, host):
         print("####################### saving identity #######################")

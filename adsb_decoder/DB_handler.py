@@ -7,6 +7,7 @@ from pymongo.read_preferences import Primary
 from .singletonDB import MongoConnectionSingleton
 from numpy import arctan2,sin,cos,degrees
 
+from .aircraftType import checkAircraftType
 
 class mongoDBClass:
 
@@ -33,12 +34,15 @@ class mongoDBClass:
     def createIdentityEntry(self, data, host):
         '''
         creates new entry for new icao address found
+        
         '''
         post = {
                 "icao": data[0],
                 "identity":{
                     "category":data[1],
-                    "callsign":data[2]
+                    "callsign":data[2],
+                    "typecode":data[3],
+                    "aircraftType": checkAircraftType(data[3], data[1])
                     },
                 "inflight": False,
                 "inGround": False,
