@@ -36,13 +36,15 @@ class mongoDBClass:
         creates new entry for new icao address found
         
         '''
+        aircraftType = checkAircraftType(data[3], data[1])
         post = {
                 "icao": data[0],
                 "identity":{
                     "category":data[1],
                     "callsign":data[2],
                     "typecode":data[3],
-                    "aircraftType": checkAircraftType(data[3], data[1])
+                    "aircraftType": aircraftType[0],
+                    "aircraftTypeId": aircraftType[1]
                     },
                 "inflight": False,
                 "inGround": False,
