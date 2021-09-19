@@ -68,6 +68,7 @@ def getAllPlanes():
                 "cat": "$identity.category",
                 "clSgn": "$identity.callsign",
                 "typecode":"$identity.typecode",
+                "aircraftTypeId":"$identity.aircraftTypeId",
                 "aircraftType":"$identity.aircraftType",
                 "fly": "$inflight",
                 "lat": {
@@ -123,6 +124,7 @@ def getIcaoPlane(msg_icao):
                 "clSgn": "$identity.callsign",
                 "typecode":"$identity.typecode",
                 "aircraftType":"$identity.aircraftType",
+                "aircraftTypeId":"$identity.aircraftTypeId",
                 "fly": "$inflight",
                 "lat": {
                     "$cond":{ "if": { "$eq": ["$inflight", True] }, "then": "$flightInfo.lat", "else": "$gndInfo.lat" }
