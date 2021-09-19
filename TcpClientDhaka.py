@@ -89,13 +89,45 @@ class TcpClient():
                 # ADS-B - Mode S Long 28 byte
                 if(df == 17):
                     icao = pms.adsb.icao(msg[0])
+                    
+                    # Practice using pyModeS
+                    # strength = pms.adsb.
+                    # print('icao: ', icao)
+                    # print('msg: ',msg[0])
+                    # print('msg[0]: ', msg[0])
+                    # msgTC = decrypt.getTC(msg[0])
+                    # if msgTC in range(9,19) or msgTC in range(20,23): #checking if TC lets us find local aereal position
+                    #     print('my message : ', msg[0])
+                    #     print('type air pos msg[0]: ', decrypt.getTC(msg[0]))
+                    #     print('air position: ', decrypt.getAirbornePos(msg[0]))
+                    # if msgTC in range(0,5):
+                    #     jsonHandler.handleID(msg[0])
 
                     
                     thread_lat = self.latLng[thread_id-1][0]
                     thread_lng = self.latLng[thread_id-1][1]
 
+                    # handleJson = jsonHandlerClass(lat=lat,lng=lng)
+                    # handleJson.handle_data(msg[0])
+                    
+                    # 2-nd method of handling messages
+                    # ADSB_db_handler.handle_data(msg[0])
 
+                    # 3-rd method of handling messages 
+                    # PLANE = PlaneInfoFactory.getInfoClass(msg[0])
+                    # print(PLANE)                    
+                    # PLANE.decodeData(msg[0], thread_lat, thread_lng)
                     PlaneInfoFactory.getInfoClass(msg[0], thread_lat, thread_lng, host)
+
+
+                    # PRACTICING ERROR CODE HANDLING
+                    # try:
+                    #     print("nuc_p ERROR=======   ",pms.adsb.nuc_p(msg[0]))
+                    #     print("nuc_v ERROR=======   ",pms.adsb.nuc_v(msg[0]))
+                    #     print("Version ERROR=======   ",pms.adsb.version(msg[0]))
+                    # except:
+                    #     print("ERROR ERROR, something went wrong  ")
+                    # remove from production code
 
                     if msg[0] in ADSB_MESSAGES.keys():
                         ADSB_MESSAGES[msg[0]][thread_id] = msg[1]
@@ -128,6 +160,18 @@ class TcpClient():
                         # print(f"{icao} {DF_11[icao]}")
                        
                         
+                # # Mode A/C - 4 byte
+                # else: 
+                #     if msg[0] in MODE_AC.keys():
+                #         MODE_AC[msg[0]][thread_id] = msg[1]
+                #         print(f"{msg[0]} {MODE_AC[msg[0]]}")
+                #         # print(ALL_MESSAGES.keys())
+                #     else: 
+                #         MODE_AC[msg[0]] = {}
+                #         MODE_AC[msg[0]][thread_id] = msg[1]
+                #         MODE_AC[msg[0]]["icao"] = icao
+                #         print(f"{msg[0]} {MODE_AC[msg[0]]}")
+            # time.sleep(3) 
             
     def handle_thread(self):
         '''
@@ -162,8 +206,8 @@ class TcpClient():
             print(f"[ACTIVE CONNECTIONS] {threading.activeCount()-1}")
             
 # client = TcpClient(["192.168.30.27", "192.168.101.3"], 10003, [[23.83614, 90.41637],[22.35443, 91.83391]])
-# client = TcpClient([ "192.168.30.27"], 10003, [[23.83614, 90.41637],[22.35443, 91.83391]]) #first receiver Perfecto
-client = TcpClient([ "192.168.101.3"], 10003, [[22.35443, 91.83391]]) #second receiver perfecto
+client = TcpClient([ "192.168.30.27"], 10003, [[23.83614, 90.41637]]) #first receiver Perfecto
+# client = TcpClient([ "192.168.101.3"], 10003, [[22.35443, 91.83391]]) #second receiver perfecto
 client.run()
 
 #updated receiver 1 coordinates
