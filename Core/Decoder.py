@@ -1,27 +1,30 @@
-
-class Decoder: 
+class Decoder:
     '''
     Decodes the raw bytes sent by signal receivers
     '''
+
     def __init__(self, buffer):
         super(Decoder, self).__init__()
         self.buffer = buffer
         # self.messages = []
         self.messages_mlat = []
-        
+
     def handle_messages(self):
         # for msg in self.messages_mlat:
         #     # print(msg[1] + "   " + msg[0])
         #     # print(msg[1] in ALL_MESSAGES)
         #     # ALL_MESSAGES = [msg]
         #     return msg
+
+        self.buffer2hexmsg()
+        self.seperateMsgTimestamp()
         return self.messages_mlat
-    
-    def handle_decode(self):
+
+    def buffer2hexmsg(self):
         msg = []
         messages = []
         i = 0 
-        
+
         while i < len(self.buffer):
             if self.buffer[i: i + 2] == [0x1A, 0x1A]:
                 msg.append(0x1A)
@@ -39,7 +42,7 @@ class Decoder:
             else: 
                 msg.append(self.buffer[i])
             i += 1
-        
+
         # Storing reminder for next reading cycle
         if len(msg) > 0:
             reminder = []
@@ -53,13 +56,15 @@ class Decoder:
         else:
             self.buffer = []
 
-        # print("msg RAW: ", msg)
-        # Extracting Messages 
+        self.messages =  messages
+
+
+    def seperateMsgTimestamp(self):
         self.messages_mlat = []
 
         # print('mlat long message[0]', messages[0])
         # print('mlat long message[0] length', len(msg[0]))
-        for mm in messages: 
+        for mm in self.messages: 
             # print('mm message-len: ', len(mm))
             msgtype = mm[0]
             msg = []
@@ -85,7 +90,5 @@ class Decoder:
             
             if len(msg) not in [28]:
                 continue
-            print(msg, ts);
+            
             self.messages_mlat.append([msg, ts])
-
-
