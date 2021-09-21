@@ -1,10 +1,10 @@
 import socket 
 import threading 
-# from Decoder import Decoder
-from  Core.Decoder import Decoder
+from Decoder import Decoder
+# from  Core.signalDecoder import Decoder
 import pyModeS as pms
-import decrypt
-from jsonHandler import jsonHandlerClass
+# import decrypt
+# from jsonHandler import jsonHandlerClass
 import time
 from DBmongoDB.DB_handler import mongoDBClass
 
@@ -209,9 +209,9 @@ class TcpClient():
             print(f"[ACTIVE CONNECTIONS] {threading.activeCount()-1}")
             
 # client = TcpClient(["192.168.30.27", "192.168.101.3"], 10003, [[23.83614, 90.41637],[22.35443, 91.83391]])
-
 # client = TcpClient([ "192.168.30.27"], 10003, [[23.83614, 90.41637],[22.35443, 91.83391]]) #first receiver Perfecto
-client = TcpClient([ "192.168.101.3"], 10003, [[22.35443, 91.83391]]) #second receiver perfecto
+# client = TcpClient([ "192.168.101.3"], 10003, [[22.35443, 91.83391]]) #second receiver perfecto?
+client = TcpClient([ "192.168.201.3"], 10003, [[22.82405, 89.55238]]) #third receiver perfecto
 client.run()
 
 #updated receiver 1 coordinates

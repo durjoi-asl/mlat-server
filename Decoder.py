@@ -17,6 +17,9 @@ class Decoder:
         #     return msg
         return self.messages_mlat
     
+    def buffer2hexmsg(self):
+        pass
+
     def handle_decode(self):
         msg = []
         messages = []
@@ -53,7 +56,7 @@ class Decoder:
         else:
             self.buffer = []
 
-        # print("msg RAW: ", msg)
+        print("msg RAW: ", msg)
         # Extracting Messages 
         self.messages_mlat = []
 
@@ -85,7 +88,7 @@ class Decoder:
             
             if len(msg) not in [28]:
                 continue
-            print(msg, ts);
+            
             self.messages_mlat.append([msg, ts])
 
 

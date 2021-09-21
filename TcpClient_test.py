@@ -1,6 +1,7 @@
 import socket 
 import threading 
 from Decoder import Decoder
+# from  Core.signalDecoder import Decoder
 import pyModeS as pms
 # import decrypt
 # from jsonHandler import jsonHandlerClass
@@ -15,6 +16,7 @@ MODE_AC = {}
 adsbd_AirCraftInfo = {}
 
 # latLng = []
+file_object = open('sample.txt', 'a')
 
 class TcpClient():
     '''
@@ -60,20 +62,20 @@ class TcpClient():
         while True: 
             print("in while loop, Thread ID: ", thread_id)
             
-            # second method
-            # print("DB lat: " ,ADSB_db_handler.REF_LAT)
-            # print("DB long: " ,ADSB_db_handler.REF_LON)
 
 
             data = self.socket.recv(self.buffersize)
-            # print('[data]: ', data)
+            print('[RAW signal data]: ', data)
             print(f"\n[DATA PACKET] ------ {host} ----- {thread_id}")
+            # file_object.write(data)
             # print(format(data))
             # print("\n")
             decoder = Decoder(data)
             # decoder.handle_decode(data, self.latLng[thread_id-1][0], self.latLng[thread_id-1][1])
-            decoder.handle_decode()
+            # decoder.handle_decode()
             messages_mlat = decoder.handle_messages()
+
+            print(messages_mlat)
             
 
             # print("[messages_mlat] [2]: ", messages_mlat[2])
@@ -89,13 +91,14 @@ class TcpClient():
                 # ADS-B - Mode S Long 28 byte
                 if(df == 17):
                     icao = pms.adsb.icao(msg[0])
+                    
+                    
 
                     
                     thread_lat = self.latLng[thread_id-1][0]
                     thread_lng = self.latLng[thread_id-1][1]
 
-
-                    PlaneInfoFactory.getInfoClass(msg[0], thread_lat, thread_lng, host)
+                    
 
                     if msg[0] in ADSB_MESSAGES.keys():
                         ADSB_MESSAGES[msg[0]][thread_id] = msg[1]
@@ -127,7 +130,7 @@ class TcpClient():
                         DF_11[icao]["icao"] = icao
                         # print(f"{icao} {DF_11[icao]}")
                        
-                        
+
             
     def handle_thread(self):
         '''
