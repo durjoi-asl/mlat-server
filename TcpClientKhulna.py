@@ -2,8 +2,7 @@ import socket
 import threading 
 from Decoder import Decoder
 import pyModeS as pms
-# import decrypt
-# from jsonHandler import jsonHandlerClass
+
 import time
 from DBmongoDB.DB_handler import mongoDBClass
 
@@ -70,7 +69,7 @@ class TcpClient():
             print(f"\n[DATA PACKET] ------ {host} ----- {thread_id}")
             # print(format(data))
             # print("\n")
-            decoder = Decoder(data)
+            decoder = Decoder(data) #decoding signal to hexcode
             # decoder.handle_decode(data, self.latLng[thread_id-1][0], self.latLng[thread_id-1][1])
             decoder.handle_decode()
             messages_mlat = decoder.handle_messages()
