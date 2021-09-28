@@ -9,6 +9,10 @@ from numpy import arctan2,sin,cos,degrees
 
 from .aircraftType import checkAircraftType
 
+from .handler_aircraft_identity import create_new_aircraft_object
+from .structureSurfacePosition import getSurfacePosStructure
+from .structureAirbornePosition import getAirbornePosStructure
+
 class mongoDBClass:
 
     TIME_FORMAT = "%m/%d/%Y, %H:%M:%S"
@@ -36,49 +40,14 @@ class mongoDBClass:
         creates new entry for new icao address found
         
         '''
-        aircraftType = checkAircraftType(data[3], data[1])
-        post = {
-                "icao": data[0],
-                "identity":{
-                    "category":data[1],
-                    "callsign":data[2],
-                    "typecode":data[3],
-                    "aircraftType": aircraftType[0],
-                    "aircraftTypeId": aircraftType[1]
-                    },
-                "inflight": False,
-                "inGround": False,
-                "flightInfo": {
-                    "lat":None,
-                    "long": None,
-                    "velocity": {
-                        "speed": None,
-                        "magHeading": None,
-                        "verticalSpeed": None
-                    },
-                    "altitude": None,
-                    "prevPos": {
-                        "lat": None,
-                        "long": None
-                    },
-                    "angle": 0
-
-                },
-                "gndInfo": {
-                    "lat": None,
-                    "long": None,
-                    "speed": None,
-                    "altitude" :None
-                },
-                "last_updated": datetime.datetime.now().strftime(self.TIME_FORMAT),
-                "host": host
-            }
-
-        self.adsb_collection.insert_one(post)
+        aircraft = create_new_aircraft_object(data, host, self.TIME_FORMAT)
+        self.adsb_collection.insert_one(aircraft)
         
     def handleID(self, data, host):
         '''
             if ICAO of msg doesn't exist in DB then a new entry is created for that ICAO
+            data => [msg_icao, category, callsign, tc, msg]
+            msg => [hexcodeMsg, timestamp]
         '''
         # msg_icao = pms.adsb.icao(msg)
         srch_res = self.adsb_collection.find_one({"icao":data[0]})
@@ -113,18 +82,103 @@ class mongoDBClass:
 
     def getPlaneByIcao(self):
         pass
+    
+    def updateHexCodeAndTstamp(self, icao, hex, ts):
+        '''
+        updates timestamp and hexcode of a particular icao
+        params=>(icao, hex, ts)
+        
+        '''
+        print("^^^^^^^^^^^^ GOT hex and ts ^^^^^^^^^^^^^^^^^^^^^^^^^")
+        self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.signal.hexcode":hex}}) #data[4][0]==signal hsexcode
+        self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.signal.timestamp":ts}}) #data[4][0]==signal timestamp
+        
 
+    def updateDecodedHex(self, icao, hex):
+        '''
+        params=>(icao, hex)
+        
+        \ndecode hex to:
+        
+        \n+----------+----------+-------------+------------------------+-----------+
+        \n|  DF (5)  |  CA (3)  |  ICAO (24)  |         ME (56)        |  PI (24)  |
+        \n+----------+----------+-------------+------------------------+-----------+
+
+        '''
+        hex2binData = pms.hex2bin(hex)
+
+        df = pms.bin2int(hex2binData[0:5])
+        ca = pms.bin2int(hex2binData[5:8])
+        # me = pms.bin2int(hex2binData[32:88])
+        me = hex[8:22]
+        # tc = pms.bin2int(hex2binData[5:8])
+        # parity = pms.bin2int(hex2binData[88:112])
+        parity = hex[22:28]
+        structure = getAirbornePosStructure(hex)
+        self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_hex.DF":df}}) #data[4][0]==signal hsexcode
+        self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_hex.CA":ca}}) #data[4][0]==signal hsexcode
+        self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_hex.ICAO":icao}}) #data[4][0]==signal hsexcode
+        self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_hex.ME":me}}) #data[4][0]==signal hsexcode
+        self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_hex.PI":parity}}) #data[4][0]==signal hsexcode
+        # self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_hex.DF":hex}}) #data[4][0]==signal hsexcode
+        if pms.adsb.typecode(hex) in range(9,19) or range(20,23):
+            self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_msg.msg":{
+                "TC":structure[0],
+                "SS":structure[1],
+                "SAF":structure[2],
+                "ALT":structure[3],
+                "T":structure[4],
+                "F":structure[5],
+                "LAT_CPR":structure[6],
+                "LON_CPR":structure[7],
+            }}}) 
+            self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_msg.msg_type":"Airborne position"}}) 
+        
+        elif pms.adsb.typecode(hex) in range(5,9):
+            self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_msg.msg":{
+                "TC":structure[0],
+                "MOV":structure[1],
+                "S":structure[2],
+                "TRK":structure[3],
+                "T":structure[4],
+                "F":structure[5],
+                "LAT_CPR":structure[6],
+                "LON_CPR":structure[7],
+            }}}) 
+            self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_msg.msg_type":"Surface position"}}) 
+        
+        elif pms.adsb.typecode(hex) == 19: #TC==19 so updates airborne velocity decoded message
+            # TC   |ST |IC|IFR|NUC|           |VrSrc|Svr|VR       |RESV|SDif|DAlt    
+             self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_msg.msg":{
+                "TC":structure[0],
+                "ST":structure[1],
+                "IC":structure[2],
+                "IFR":structure[3],
+                "NUC":structure[4],
+                "WHAT":structure[5],
+                "VrSrc":structure[6],
+                "Svr":structure[7],
+                "VR":structure[8],
+                "RESV":structure[9],
+                "SDir":structure[10],
+                "SAlt":structure[11],
+            }}}) 
+             self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_msg.msg_type":"Airborne velocity"}}) 
+        
+
+    def updateRawDecodedMsg(self, msg):
+        pass
     def updateAerealPos(self, data, host):
         '''
             updates areal position of an existing airplane in the DB
-            \n data param receives a list => [icao, decoded_new_lat, decoded_new_long, alt]
+            \n data param receives a list => [icao, decoded_new_lat, decoded_new_long, alt,[hexcode,timestamp]]
         '''
         # lt, ln = pms.adsb.airborne_position_with_ref( msg, self.REF_LAT, self.REF_LON)
         # msg_icao = pms.adsb.icao(msg)
         search_res = self.adsb_collection.find_one({"icao":data[0]})
-        print("$$$$$$ DATA $$$$$$$$$")
-        print(search_res)
-        print("$$$$$$ DATA $$$$$$$$")
+        # print("$$$$$$ DATA $$$$$$$$$")
+        # print(search_res)
+        # print("$$$$$$ DATA $$$$$$$$")
         if search_res != None and list(self.adsb_collection.find({"icao":data[0]},{"_id":0, "host":1}))[0]["host"]==host :
             # update data if icao entry already exists
             print('Update areal data ==========')
@@ -139,6 +193,10 @@ class mongoDBClass:
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.prevPos.lat": current_Lat}})
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.prevPos.long": current_Long}})
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.altitude":data[3]}}) #data[3]==altitude
+            self.updateHexCodeAndTstamp(data[0], data[4][0], data[4][1]) #data[4][0]==signal hexcode, data[4][0]==signal timestamp
+            self.updateDecodedHex(data[0], data[4][0])
+            # self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"raw.signal.hexcode":data[4][0]}}) #data[4][0]==signal hsexcode
+            # self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"raw.signal.timestamp":data[4][1]}}) #data[4][0]==signal timestamp
             if current_Lat != None:
                 # calculate angle and make entry only if current_lat(ie previous lat now) exists
                 newAngle = self.angleFromCoordinate(current_Lat, current_Long, data[1], data[2])
@@ -150,7 +208,7 @@ class mongoDBClass:
 
     def updateGndPos(self, data, host):
         '''
-            updates GROUND position of an existing airplane in the DB
+            \n updates GROUND position of an existing airplane in the DB
             \n data param receives a list => [icao, decoded_new_lat, decoded_new_long]
         '''
 
@@ -173,19 +231,22 @@ class mongoDBClass:
         elif list(self.adsb_collection.find({"icao":data[0]},{"_id":0, "host":1}))[0]["host"]==host:
             # position already exists  should implement locally ambigious position later
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"inGround": True}})
-            self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"inflight": True}})
+            self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"inflight": False}})
             
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"gndInfo.lat": data[1]}})
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"gndInfo.long": data[0]}})
         
+        self.updateHexCodeAndTstamp(data[0], data[3][0], data[3][1])  #data[3][0]==signal hexcode, data[3][0]==signal timestamp
+        self.updateDecodedHex(data[0],data[3][0])
+        
 
-    def updateAerealSpeed(self, icao, speed, host):
-        pass
+    # def updateAerealSpeed(self, icao, speed, host):
+    #     pass
 
 
 
-    def updateGndSpeed(self, icao, lat, lng):
-        pass
+    # def updateGndSpeed(self, icao, lat, lng):
+    #     pass
 
     def deleteByIcao(self, icao):
         pass
@@ -196,8 +257,8 @@ class mongoDBClass:
             returns angles in degress between two (lat,long) coordinates
             /n (old_lat, old_lon, new_lat, new_lon)
         '''
-        print("@@@@@@@@@#### calculate angle ######@@@@@@@@@@@")
-        print(lat1, lon1, lat2, lon2)
+        # print("@@@@@@@@@#### calculate angle ######@@@@@@@@@@@")
+        # print(lat1, lon1, lat2, lon2)
         # angle in degrees
         # angleDeg = Math.atan2(lon2 - lon1, lat2 - lat1) * 180 / Math.pi
         
@@ -215,7 +276,7 @@ class mongoDBClass:
     def handle_ArealVelocity(self, data, host):
         # handle gndVelocity here, gndVelocity is not done
         '''
-        \nthe data praams receives a list [ icao, [speed, magHeading, verticalSpeed] ]
+        \nthe data praams receives a list [ icao, [speed, magHeading, verticalSpeed], [hexMsg, timestamp] ]
 
         \n
         Four different subtypes are defined in bits 6-8 of ME field. 
@@ -237,7 +298,8 @@ class mongoDBClass:
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.velocity.speed": data[1][0]}})
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.velocity.magHeading": data[1][1]}})
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.velocity.verticalSpeed": data[1][2]}})
-        
+            self.updateHexCodeAndTstamp(data[0], data[2][0], data[2][1])
+            self.updateRawDecodedMsg(data[0], data[2][0] )
 
     def handle_GndVelocity(self, msg,):
         '''
@@ -256,7 +318,9 @@ class mongoDBClass:
         
 
     def handle_data(self, msg):
+        '''
         
+        '''
         msgTC = pms.adsb.typecode(msg)
 
         if msgTC in range(9,19) or msgTC in range(20,23): #checking if TC == local aereal position

@@ -56,14 +56,15 @@ class Idendity(PlaneInfo):
     def decodeData(self, msg, ref_lat, ref_long, host):
         '''
             decoding Identity message
+            msg => [message, timestamp]
         '''
 
-        msg_icao = pms.adsb.icao(msg)
-        tc = pms.adsb.typecode(msg)
-        category = pms.adsb.category(msg)
-        callsign = pms.adsb.callsign(msg)
+        msg_icao = pms.adsb.icao(msg[0])
+        tc = pms.adsb.typecode(msg[0])
+        category = pms.adsb.category(msg[0])
+        callsign = pms.adsb.callsign(msg[0])
         print("####################### for identity #######################")
-        self.databaseHandler([msg_icao, category, callsign, tc], host)
+        self.databaseHandler([msg_icao, category, callsign, tc, msg], host)
 
     def databaseHandler(self, data, host):
         print("####################### saving identity #######################")
@@ -92,12 +93,11 @@ class ArealPosition(PlaneInfo):
             \n current_lat, currnet_long
         '''
         
-        msg_icao = pms.adsb.icao(msg)
-        alt = pms.adsb.altitude(msg)
-        new_lt, new_ln = pms.adsb.airborne_position_with_ref( msg, ref_lat, ref_long)
-        print("new AEREAL position is lat: {} ,long: {}".format(new_lt, new_ln))
-
-        self.databaseHandler([msg_icao, new_lt, new_ln, alt], host)
+        msg_icao = pms.adsb.icao(msg[0])
+        alt = pms.adsb.altitude(msg[0])
+        new_lt, new_ln = pms.adsb.airborne_position_with_ref( msg[0], ref_lat, ref_long)
+        
+        self.databaseHandler([ msg_icao, new_lt, new_ln, alt,[msg[0],msg[1]] ], host)
 
     def databaseHandler(self, data, host):
         self.db_Handler.updateAerealPos(data, host)
@@ -120,12 +120,12 @@ class GroundPosition(PlaneInfo):
             decoding Ground Position message
         '''
         
-        msg_icao = pms.adsb.icao(msg)
+        msg_icao = pms.adsb.icao(msg[0])
         
-        new_lt, new_ln = pms.adsb.position_with_ref( msg, ref_lat, ref_long)
+        new_lt, new_ln = pms.adsb.position_with_ref( msg[0], ref_lat, ref_long)
         print("new GROUND position is lat: {} ,long: {}".format(new_lt, new_ln))
 
-        self.databaseHandler([msg_icao, new_lt, new_ln], host)
+        self.databaseHandler([msg_icao, new_lt, new_ln,msg], host)
 
     def databaseHandler(self, data, host):
         self.db_Handler.updateGndPos(data, host)
@@ -148,15 +148,17 @@ class AirborneVelocity(PlaneInfo):
     def decodeData(self, msg, ref_lat, ref_long, host):
         '''
             decoding Airborne-Velocity message
+            msg => [msg, timestamp]
         '''
-        print("message is: ", msg)
-        msg_icao = pms.adsb.icao(msg)
+        print("message is: ", msg[0])
+        msg_icao = pms.adsb.icao(msg[0])
         try:
-            velocity_data = pms.adsb.velocity(msg) # this is a list => speed, magHeading, verticalSpeed
-            self.databaseHandler([msg_icao,velocity_data], host)
+            velocity_data = pms.adsb.velocity(msg[0]) # this is a list => speed, magHeading, verticalSpeed
+            self.databaseHandler([msg_icao,velocity_data, msg], host)
         except:
             # figure out why error arises sometimes
             print('error air speed, icao: ', msg_icao)
+            pass
 
         # self.databaseHandler([msg_icao,velocity_data])
 
@@ -168,8 +170,11 @@ class PlaneInfoFactory:
 
     @staticmethod
     def getInfoClass(msg, parm_lat, param_long, host):
+        '''
+        msg => [message, timestamp]
+        '''
         try:
-            msgTC = pms.adsb.typecode(msg)
+            msgTC = pms.adsb.typecode(msg[0])
 
             if msgTC in range(9,19) or msgTC in range(20,23): #checking if TC == local aereal position
                 print("got aereal position msg")
@@ -181,7 +186,8 @@ class PlaneInfoFactory:
                 plane.decodeData(msg, parm_lat, param_long, host)
                 # return Idendity()
             elif msgTC in range(5,9): #ground position
-                plane = AirborneVelocity()
+                # plane = AirborneVelocity()
+                plane =GroundPosition
                 plane.decodeData(msg, parm_lat, param_long, host)
                 # return GroundPosition()
             elif msgTC == 19: #airborne velocity

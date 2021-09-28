@@ -94,8 +94,11 @@ class TcpClient():
                     thread_lat = self.latLng[thread_id-1][0]
                     thread_lng = self.latLng[thread_id-1][1]
 
-
-                    PlaneInfoFactory.getInfoClass(msg[0], thread_lat, thread_lng, host)
+                    #msg[0] = msg
+                    #msg[1] = timestamp
+                    #msg = [hex_msg, timestamp]
+                    #was sending msg[0], now refactoring and sending the whole msg
+                    PlaneInfoFactory.getInfoClass(msg, thread_lat, thread_lng, host)
 
                     if msg[0] in ADSB_MESSAGES.keys():
                         ADSB_MESSAGES[msg[0]][thread_id] = msg[1]
