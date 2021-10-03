@@ -11,11 +11,12 @@ from .aircraftType import checkAircraftType
 
 from .handler_aircraft_identity import create_new_aircraft_object
 from .structureSurfacePosition import getSurfacePosStructure
+from .structureAirborneVelocity import getAirborneVelocityStructure
 from .structureAirbornePosition import getAirbornePosStructure
 
 class mongoDBClass:
 
-    TIME_FORMAT = "%m/%d/%Y, %H:%M:%S"
+    TIME_FORMAT = "%m/%d/%Y, %H:%M:%S" # month-data-year, hours-minutes-seconds
     # REF_LAT = 23.83588
     # REF_LON = 90.41611
 
@@ -89,7 +90,7 @@ class mongoDBClass:
         params=>(icao, hex, ts)
         
         '''
-        print("^^^^^^^^^^^^ GOT hex and ts ^^^^^^^^^^^^^^^^^^^^^^^^^")
+        # print("^^^^^^^^^^^^ GOT hex and ts ^^^^^^^^^^^^^^^^^^^^^^^^^")
         self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.signal.hexcode":hex}}) #data[4][0]==signal hsexcode
         self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.signal.timestamp":ts}}) #data[4][0]==signal timestamp
         
@@ -114,14 +115,16 @@ class mongoDBClass:
         # tc = pms.bin2int(hex2binData[5:8])
         # parity = pms.bin2int(hex2binData[88:112])
         parity = hex[22:28]
-        structure = getAirbornePosStructure(hex)
-        self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_hex.DF":df}}) #data[4][0]==signal hsexcode
-        self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_hex.CA":ca}}) #data[4][0]==signal hsexcode
-        self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_hex.ICAO":icao}}) #data[4][0]==signal hsexcode
-        self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_hex.ME":me}}) #data[4][0]==signal hsexcode
-        self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_hex.PI":parity}}) #data[4][0]==signal hsexcode
-        # self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_hex.DF":hex}}) #data[4][0]==signal hsexcode
-        if pms.adsb.typecode(hex) in range(9,19) or range(20,23):
+        
+        self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_hex.DF":df}}) #data[4][0]==signal hexcode
+        self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_hex.CA":ca}}) #data[4][0]==signal hexcode
+        self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_hex.ICAO":icao}}) #data[4][0]==signal hexcode
+        self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_hex.ME":me}}) #data[4][0]==signal hsxcode
+        self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_hex.PI":parity}}) #data[4][0]==signal hexcode
+        # self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_hex.DF":hex}}) #data[4][0]==signal hexcode
+        
+        if pms.adsb.typecode(hex) in range(9,19) or range(20,23): #Airborne position
+            structure = getAirbornePosStructure(hex)
             self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_msg.msg":{
                 "TC":structure[0],
                 "SS":structure[1],
@@ -132,9 +135,10 @@ class mongoDBClass:
                 "LAT_CPR":structure[6],
                 "LON_CPR":structure[7],
             }}}) 
-            self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_msg.msg_type":"Airborne position"}}) 
+            self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_msg.msg_type":"Airborne_position"}}) 
         
-        elif pms.adsb.typecode(hex) in range(5,9):
+        elif pms.adsb.typecode(hex) in range(5,9): #Surface position
+            structure = getSurfacePosStructure(hex)
             self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_msg.msg":{
                 "TC":structure[0],
                 "MOV":structure[1],
@@ -145,11 +149,12 @@ class mongoDBClass:
                 "LAT_CPR":structure[6],
                 "LON_CPR":structure[7],
             }}}) 
-            self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_msg.msg_type":"Surface position"}}) 
+            self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_msg.msg_type":"Surface_position"}}) 
         
         elif pms.adsb.typecode(hex) == 19: #TC==19 so updates airborne velocity decoded message
+            structure = getAirborneVelocityStructure(hex)
             # TC   |ST |IC|IFR|NUC|           |VrSrc|Svr|VR       |RESV|SDif|DAlt    
-             self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_msg.msg":{
+            self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_msg.msg":{
                 "TC":structure[0],
                 "ST":structure[1],
                 "IC":structure[2],
@@ -163,11 +168,11 @@ class mongoDBClass:
                 "SDir":structure[10],
                 "SAlt":structure[11],
             }}}) 
-             self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_msg.msg_type":"Airborne velocity"}}) 
+            self.adsb_collection.update_one({"icao":icao}, {"$set":{"raw.decoded_msg.msg_type":"Airborne_velocity"}}) 
         
 
-    def updateRawDecodedMsg(self, msg):
-        pass
+    # def updateRawDecodedMsg(self, msg):
+    #     pass
     def updateAerealPos(self, data, host):
         '''
             updates areal position of an existing airplane in the DB
@@ -299,7 +304,8 @@ class mongoDBClass:
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.velocity.magHeading": data[1][1]}})
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.velocity.verticalSpeed": data[1][2]}})
             self.updateHexCodeAndTstamp(data[0], data[2][0], data[2][1])
-            self.updateRawDecodedMsg(data[0], data[2][0] )
+            self.updateDecodedHex(data[0], data[2][0])
+            # self.updateRawDecodedMsg(data[0], data[2][0] )
 
     def handle_GndVelocity(self, msg,):
         '''
@@ -319,20 +325,19 @@ class mongoDBClass:
 
     def handle_data(self, msg):
         '''
-        
+            takes hexcode msaage, finds out type of data given and gives to approptiate data handler
         '''
         msgTC = pms.adsb.typecode(msg)
 
         if msgTC in range(9,19) or msgTC in range(20,23): #checking if TC == local aereal position
-            print('not updataing yet...')
             self.updateAerealPos(msg) #msg structure => []
+
         elif msgTC in  range(1,5): #identity typecode
             self.handleID(msg)
+
         elif msgTC in range(5,9): #ground position
-            
             self.updateGndPos(msg)
-            print('================================== ground position ==================================')
-            # print(' ')
+
         elif msgTC == 19: #airborne velocity
             self.handle_ArealVelocity(msg)
             

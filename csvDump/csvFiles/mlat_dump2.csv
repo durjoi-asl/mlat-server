@@ -1,0 +1,3 @@
+icao,identity,inFlight,inGround,flight_lat,flight_long,flight_velovity_speed,flight_velovity_magHeading,flight_velovity_verticalSpeed,flight_altitude,flight_angle,gndInfo_lat,gndInfo_long,gndInfo_speed,gndInfo_altitude,raw_signal_hexcode,raw_signal_timestamp,raw_decodedHex,raw_DecodedMsg_msgType,raw_DecodedMsg_msg
+123fds,asd12,TRUE,FALSE,112,32,12,32,321,22,22,null,null,null,null,df,df21,dsf2,fd,21sf,,
+123fds,asd12,TRUE,FALSE,112,32,12,32,321,22,22,null,null,null,null,df,df21,dsf2,fd,21sf,,

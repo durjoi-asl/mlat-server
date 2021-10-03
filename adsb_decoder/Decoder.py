@@ -80,7 +80,7 @@ class adsb_decoder:
 
     def getTC(self, buff):
         '''
-        gets hex-msg string as param and returns the type-code; 
+        \n gets hex-msg string as param and returns the type-code; 
         \n tc == 1-4  => aiircraft idendity; 
         \n tc == 5-8  => sufrace position; 
         \n tc == 9-18, 20-22  => airborne position; 

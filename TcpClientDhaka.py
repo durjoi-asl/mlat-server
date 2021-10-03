@@ -117,7 +117,7 @@ class TcpClient():
                     # PLANE = PlaneInfoFactory.getInfoClass(msg[0])
                     # print(PLANE)                    
                     # PLANE.decodeData(msg[0], thread_lat, thread_lng)
-                    PlaneInfoFactory.getInfoClass(msg[0], thread_lat, thread_lng, host)
+                    PlaneInfoFactory.getInfoClass(msg, thread_lat, thread_lng, host)
 
 
                     # PRACTICING ERROR CODE HANDLING

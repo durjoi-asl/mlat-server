@@ -59,7 +59,7 @@ def create_new_aircraft_object(data, host, TIME_FORMAT):
                     "PI":getParity(data[4][0])
                 },
                 "decoded_msg":{
-                    "msg_type":"Aircraft identification and category",
+                    "msg_type":"Aircraft_identification_and_category",
                     "msg":{
                         "TC":aircraftIdStructure[0],
                         "CA":aircraftIdStructure[1],

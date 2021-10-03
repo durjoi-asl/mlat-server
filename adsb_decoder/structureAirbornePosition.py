@@ -10,47 +10,76 @@ ie ADSBdata[8:22]
 
 
 def getTC(MEbin):
+    '''
+    param =>  binary ME message
+    returns => returns int TC; ie. ME[0:5]
+    '''
     TC = bin2int(MEbin[0:5])
-    print("myTC: ",TC)
     return TC
 
 def getSS(MEbin):
+    '''
+    param => binary ME message
+    returns => returns int SS; ie. ME[5:7]
+    '''
     SS = bin2int(MEbin[5:7])
-    print("mySS: ",SS)
     return SS
     
 def getSAF(MEbin):
+    '''
+    param =>  binary ME message
+    returns => returns int SAF; ie. ME[7:8]
+    '''
     SAF = bin2int(MEbin[7:8])
-    print("mySAF: ",SAF)
     return SAF
 
 def getALT(MEbin):
+    '''
+    param =>  binary ME message
+    returns => returns int ALT; ie. ME[8:20]
+    '''
     ALT = bin2int(MEbin[8:20])
-    print("myALT: ",ALT)
     return ALT
 
 def getT(MEbin):
+    '''
+    param =>  binary ME message
+    returns => returns int T; ie. ME[20:21]
+    '''
     T = bin2int(MEbin[20:21])
-    print("myT: ",T)
     return T
 
 def getF(MEbin):
+    '''
+    param =>  binary ME message
+    returns => returns int F(Flag); ie. ME[21:22]
+    '''
     F = bin2int(MEbin[21:22])
-    print("myF: ",F)
     return F
     
 def getLAT_CPR(MEbin):
+    '''
+    param =>  binary ME message
+    returns => returns int LAT-CPR; ie. ME[22:39]
+    '''
     lat = bin2int(MEbin[22:39])
-    print("myLAT_CPR: ",lat)
     return lat
 
 def getLON_CPR(MEbin):
-    print()
+    '''
+    param => get binary ME message
+    returns => returns int LON-CPE; ie. ME[39:56]
+    '''
+    # print()
     lon = bin2int(MEbin[39:56])
-    print("myLON_CPR: ",lon)
+    # print("myLON_CPR: ",lon)
     return lon
 
 def getAirbornePosStructure(fullHhexMsg):
+    '''
+    param => get hexcode
+    returns => returns [ TC, SS, SAF, ALT, T, F, LAT-CPR, LON-CPR ]
+    '''
     MEmsg = fullHhexMsg[8:22]
     MEbin = hex2bin(MEmsg)
     return [getTC(MEbin), getSS(MEbin), getSAF(MEbin), getALT(MEbin), getT(MEbin), getF(MEbin), getLAT_CPR(MEbin), getLON_CPR(MEbin)]

@@ -4,7 +4,7 @@ class Decoder:
     '''
 
     def __init__(self, buffer):
-        super(Decoder, self).__init__()
+        
         self.buffer = buffer
         # self.messages = []
         self.messages_mlat = []
