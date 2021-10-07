@@ -13,16 +13,19 @@ import datetime
 import uuid
 
 from flask_cors import CORS, cross_origin
+
+# from django.blog.blogapi.posts import permissions
 CORS(app)
 
 
 
-def token_required(f): #decorator for authorization
+def token_required(f): #decorator for authorization, login
     @wraps(f)
     def decorated(*args, **kwargs):
         token = None
-        print(request.headers['x-access-token'])
+        
         if 'x-access-token' in request.headers:
+            print(request.headers['x-access-token'])
             token = request.headers['x-access-token']
 
         if not token:
@@ -39,6 +42,31 @@ def token_required(f): #decorator for authorization
         return f(current_user, *args, **kwargs)
     
     return decorated
+    
+def authRBAC(roles,levels, permissions):
+    '''
+        params= ( [roles list], [levels list], [permissions list] )
+
+    '''
+    def innerRBAC(f):
+        '''
+        inner decorator for RBAC, checks for roles and permissions
+        '''
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            accessMsg = {'accessableFor':{'roles': roles,'levels':levels ,'permissions': permissions}}
+            token = request.args.get('token')
+
+            if not token:
+                return jsonify({'error': 'Token is missing', 'accessFor':accessMsg['accessableFor'] }), 403
+            try:
+                data = jwt.decode(token, app.config['SECRET_KEY'])
+            except:
+                return jsonify({'error': 'Token is invalid'}), 403
+
+            return f(*args, **kwargs)       
+        return decorated  
+    return innerRBAC
 
 def get_auth(f):
     @wraps(f)
@@ -160,12 +188,12 @@ def getIcaoPlane(msg_icao):
 def testAuth(current_user):
     user = {
         "name":current_user.name,
-        "admin":current_user.admin,
+        "admin":current_user.roles[0],
         "password":"woops you didn't think you'll be able to see this did you? :p"
     }
     return jsonify({"testAPI":"testing", "authoriaztion":"working properly","user who called this":user})
 
-@app.route('/test_auth_role') #finish this
+@app.route('/test/auth_role') #finish this
 @cross_origin(supports_credentials=True)
 @token_required
 def testAuthRole(current_user):
@@ -179,7 +207,19 @@ def testAuthRole(current_user):
         }
     return jsonify({"testAPI":"testing roles", "authoriaztion":"working properly","user who called this":user})
 
-
+@app.route('/test/rbac') #finish this
+@cross_origin(supports_credentials=True)
+@authRBAC(roles=["cook", "baburchi"],levels=[0], permissions=["all", "restricted", "wow"])
+def testAuthRbac(current_user):
+    # print(current_user)
+    if current_user.role == 2:
+        user = {
+            "name":current_user.name,
+            "admin":current_user.admin,
+            "role" : current_user.role,
+            "password":"woops you didn't think you'll be able to see this did you? :p"
+        }
+    return jsonify({"testAPI":"testing roles", "authoriaztion":"working properly","user who called this":user})
 
 @app.route("/user/", methods=["GET"]) ## implement authorization and authentication to show all users 
 @cross_origin(supports_credentials=True)
@@ -271,11 +311,32 @@ def sign_up():
     sqlDB.session.commit()
     return jsonify({'message':'new user created', "name":data['name'] })
     
-
-@app.route("/login/")
+@app.route("/login/", methods=['POST'])
 @cross_origin(supports_credentials=True)
 def login():
-    print('hello')
+    print('post login')
+    data = request.get_json()
+    # print("data: ", data)
+    # print("username: ",data["username"])
+    # print("password: ",data["password"])
+    if data == None:
+        return make_response('could not verify', 401, {"WWW-Authenticate":'Basic realm="Login required!"'})
+    else:
+        user = Users.query.filter_by(name=data["username"]).first()
+        if user == None:
+            return make_response('could not verify', 401, {"WWW-Authenticate":'Basic realm="Login required!"'})
+        else:
+            
+            if check_password_hash(user.password, data['password']):
+                token = jwt.encode({'public_id': user.public_id, 'exp':datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, app.config['SECRET_KEY'])
+                return jsonify({'token':token}) #token.decode('UTF-8')
+            else:
+                return make_response('could not verify', 401, {"WWW-Authenticate":'Basic realm="Login required!"'}) # if given name & pass don't match
+
+@app.route("/loginBacicAuth/")
+@cross_origin(supports_credentials=True)
+def loginBacicAuth():
+    print('basic auth login')
     auth = request.authorization
     print('auth: ', auth)
     print('req: ', request.authorization)
