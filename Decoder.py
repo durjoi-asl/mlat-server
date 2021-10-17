@@ -85,7 +85,7 @@ class Decoder:
             
             if len(msg) not in [28]:
                 continue
-            print(msg, ts);
+            print(msg, ts)
             self.messages_mlat.append([msg, ts])
 
 
