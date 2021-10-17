@@ -2,6 +2,11 @@
 ##   Ignoring pycache folders and its subdirectory   ##
 #########################################################
 
-**/__pycache__/*
+*/__pycache__/*
 __pycache__/*
 __pycache__/
+
+###########################################
+##   Ignoring specific file types; csv   ##
+###########################################
+*.csv
