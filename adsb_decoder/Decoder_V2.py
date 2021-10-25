@@ -165,6 +165,12 @@ class AirborneVelocity(PlaneInfo):
 
 
 class PlaneInfoFactory:
+    factories = {
+        "identity": Idendity(),
+        "aereal_position": ArealPosition(),
+        "airborne_velocity": AirborneVelocity(),
+        "ground_position": GroundPosition()
+    }
 
     @staticmethod
     def getInfoClass(msg, parm_lat, param_long, host):
@@ -181,7 +187,7 @@ class PlaneInfoFactory:
                 plane.decodeData(msg, parm_lat, param_long, host)
                 # return Idendity()
             elif msgTC in range(5,9): #ground position
-                plane = AirborneVelocity()
+                plane = GroundPosition()
                 plane.decodeData(msg, parm_lat, param_long, host)
                 # return GroundPosition()
             elif msgTC == 19: #airborne velocity
