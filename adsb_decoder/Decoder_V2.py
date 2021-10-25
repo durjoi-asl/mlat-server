@@ -1,6 +1,6 @@
 import pyModeS as pms
 from abc import ABC, abstractmethod, abstractstaticmethod, ABCMeta
-
+import time
 # from DB
 from .DB_handler import mongoDBClass
 # import DB_handler
@@ -94,8 +94,10 @@ class ArealPosition(PlaneInfo):
         '''
         
         msg_icao = pms.adsb.icao(msg[0])
-        alt = pms.adsb.altitude(msg[0])
+        # alt = pms.adsb.altitude(msg[0])
+        alt = 'not updating'
         new_lt, new_ln = pms.adsb.airborne_position_with_ref( msg[0], ref_lat, ref_long)
+        
         
         self.databaseHandler([ msg_icao, new_lt, new_ln, alt,[msg[0],msg[1]] ], host)
 
@@ -169,7 +171,7 @@ class AirborneVelocity(PlaneInfo):
 class PlaneInfoFactory:
     
 
-    @staticmethod
+    # @staticmethod
     def getInfoClass(msg, parm_lat, param_long, host):
         '''
         msg => [message, timestamp]
@@ -181,6 +183,12 @@ class PlaneInfoFactory:
             "ground_position": GroundPosition()
         }
         try:
+            # print('inside decoder V2')
+            # print('msg', msg)
+            # print('msg[0]', msg[0])
+            # print('msg[0] type:', type(msg[0]))
+            # print('tc: ', pms.adsb.typecode(msg[0]))
+            # time.sleep(1)
             msgTC = pms.adsb.typecode(msg[0])
 
             if msgTC in range(9,19) or msgTC in range(20,23): #checking if TC == local aereal position
