@@ -167,31 +167,38 @@ class AirborneVelocity(PlaneInfo):
 
 
 class PlaneInfoFactory:
+    
 
     @staticmethod
     def getInfoClass(msg, parm_lat, param_long, host):
         '''
         msg => [message, timestamp]
         '''
+        factories = {
+            "identity": Idendity(),
+            "aereal_position": ArealPosition(),
+            "airborne_velocity": AirborneVelocity(),
+            "ground_position": GroundPosition()
+        }
         try:
             msgTC = pms.adsb.typecode(msg[0])
 
             if msgTC in range(9,19) or msgTC in range(20,23): #checking if TC == local aereal position
                 print("got aereal position msg")
-                plane = ArealPosition()
+                plane = factories['aereal_position']
                 plane.decodeData(msg, parm_lat, param_long, host)
                 # return ArealPosition()
             elif msgTC in  range(1,5): #identity typecode
-                plane = Idendity()
+                plane = factories['identity']
                 plane.decodeData(msg, parm_lat, param_long, host)
                 # return Idendity()
             elif msgTC in range(5,9): #ground position
                 # plane = AirborneVelocity()
-                plane =GroundPosition
+                plane = factories['ground_position']
                 plane.decodeData(msg, parm_lat, param_long, host)
                 # return GroundPosition()
             elif msgTC == 19: #airborne velocity
-                plane = AirborneVelocity()  
+                plane = factories['aereal_position']
                 plane.decodeData(msg, parm_lat, param_long, host)
                 # return AirborneVelocity()
             

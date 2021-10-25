@@ -10,3 +10,5 @@ __pycache__/
 ##   Ignoring specific file types; csv   ##
 ###########################################
 *.csv
+**/__pycache__/*
+__pycache__/*

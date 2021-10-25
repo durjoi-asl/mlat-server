@@ -23,6 +23,8 @@ def create_new_aircraft_object(data, host, TIME_FORMAT):
             "inflight": False,
             "inGround": False,
             "flightInfo": {
+                "odd_frame":None,
+                "even_frame":None,
                 "lat":None,
                 "long": None,
                 "velocity": {

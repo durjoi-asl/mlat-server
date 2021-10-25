@@ -13,6 +13,7 @@ from .handler_aircraft_identity import create_new_aircraft_object
 from .structureSurfacePosition import getSurfacePosStructure
 from .structureAirborneVelocity import getAirborneVelocityStructure
 from .structureAirbornePosition import getAirbornePosStructure
+import time
 
 class mongoDBClass:
 
@@ -177,21 +178,25 @@ class mongoDBClass:
         '''
             updates areal position of an existing airplane in the DB
             \n data param receives a list => [icao, decoded_new_lat, decoded_new_long, alt,[hexcode,timestamp]]
+            \n updates areal position of an existing airplane in the DB
+            \n parms => (data, host); data=[icao, new_lat, new_long, altitude]
+            \n data param receives a list => [icao, decoded_new_lat, decoded_new_long, alt]
         '''
         # lt, ln = pms.adsb.airborne_position_with_ref( msg, self.REF_LAT, self.REF_LON)
         # msg_icao = pms.adsb.icao(msg)
         search_res = self.adsb_collection.find_one({"icao":data[0]})
         # print("$$$$$$ DATA $$$$$$$$$")
         # print(search_res)
-        # print("$$$$$$ DATA $$$$$$$$")
+        # print("$$$$$$ DATA Exists, updating areal position $$$$$$$$")
+        
         if search_res != None and list(self.adsb_collection.find({"icao":data[0]},{"_id":0, "host":1}))[0]["host"]==host :
-            # update data if icao entry already exists
+            # update data if icao entry already exists and the receiver is the same
             print('Update areal data ==========')
             
             current_Lat = search_res['flightInfo']['lat']
             current_Long = search_res['flightInfo']['long']
             
-            
+            self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.prevPos.what": current_Lat}})
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"inflight": True}})
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.lat": data[1]}})
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.long": data[2]}})
@@ -206,6 +211,8 @@ class mongoDBClass:
                 # calculate angle and make entry only if current_lat(ie previous lat now) exists
                 newAngle = self.angleFromCoordinate(current_Lat, current_Long, data[1], data[2])
                 self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.angle": int(newAngle)}})
+
+            
 
         else:
             #do nothing if icao entry doesn't already exist
