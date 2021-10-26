@@ -6,5 +6,8 @@ class Config(object):
         'postgresql://postgres:postgres@localhost/testThings'
         # 'postgresql://durjoi:mlat123@localhost/durjoi' 
         
+        # dialect+driver://username:password@host:port/database
+        
+    
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False

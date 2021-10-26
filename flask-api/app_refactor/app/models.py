@@ -25,8 +25,11 @@ class Users(sqlDB.Model):
     public_id = sqlDB.Column(sqlDB.String(50), unique=True)
     name = sqlDB.Column(sqlDB.String(100))
     password = sqlDB.Column(sqlDB.String(100))
-    admin = sqlDB.Column(sqlDB.Boolean)
+    # admin = sqlDB.Column(sqlDB.Boolean)
     roles = sqlDB.relationship('Role', secondary=users_role, backref=sqlDB.backref('persons', lazy='dynamic'))
+    
+    def __repr__(self):
+        return f'<User:  {self.id } {self.name}>' 
 
     # def __init__(self, name, email) -> None:
     #     self.name = name
@@ -41,14 +44,21 @@ role_permission = sqlDB.Table('role_permission',
 class Role(sqlDB.Model):
     role_id = sqlDB.Column( sqlDB.Integer, primary_key=True, unique=True)
     role = sqlDB.Column( sqlDB.String(100) )
+    level = sqlDB.Column(sqlDB.Integer,  default=-1)
     permissions = sqlDB.relationship('Permission', secondary=role_permission, backref=sqlDB.backref('roles', lazy='dynamic'))
-    # tag = sqlDB.Column( sqlDB.String(50) )
+    
+
+    def __repr__(self):
+        return '<Role:  %r>' % self.role
 
 
 class Permission(sqlDB.Model):
     permission_id = sqlDB.Column( sqlDB.Integer, primary_key=True, unique=True )
     permission  = sqlDB.Column( sqlDB.String(100))
     # tag =  sqlDB.Column( sqlDB.String(50))
+
+    def __repr__(self):
+        return '<Permission:  %r>' % self.permission
 
 admin.add_view(ModelView(Users, sqlDB.session))
 admin.add_view(ModelView(Role, sqlDB.session))

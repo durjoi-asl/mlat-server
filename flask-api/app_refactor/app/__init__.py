@@ -12,7 +12,8 @@ import pymongo
 sqlDB = SQLAlchemy(app)
 sqlDB.create_all()
 
-migrate = Migrate(app, sqlDB)
+migrate = Migrate()
+migrate.init_app(app, sqlDB)
 
 MONGOHOST = "localhost" # address where mongoDB is hosted
 MONGOPORT = 27017 # port of mondoDB hosting
