@@ -184,15 +184,18 @@ class mongoDBClass:
         '''
         # lt, ln = pms.adsb.airborne_position_with_ref( msg, self.REF_LAT, self.REF_LON)
         # msg_icao = pms.adsb.icao(msg)
-        search_res = self.adsb_collection.find_one({"icao":data[0]})
+        
+        # search_res = self.adsb_collection.find_one({"icao":data[0]})
+        
         # print("$$$$$$ DATA $$$$$$$$$")
         # print(search_res)
-        # print("$$$$$$ DATA Exists, updating areal position $$$$$$$$")
+        # print("$$$$$$ DATA $$$$$$$$")
         
-        if search_res != None and list(self.adsb_collection.find({"icao":data[0]},{"_id":0, "host":1}))[0]["host"]==host :
-            # update data if icao entry already exists and the receiver is the same
+        # if search_res != None and list(self.adsb_collection.find({"icao":data[0]},{"_id":0, "host":1}))[0]["host"]==host :
+        if self.adsb_collection.find_one({"icao":data[0]}) != None and list(self.adsb_collection.find({"icao":data[0]}))[0]["host"]==host :
+            # update data if icao entry already exists
             print('Update areal data ==========')
-            
+            search_res = self.adsb_collection.find_one({"icao":data[0]})
             current_Lat = search_res['flightInfo']['lat']
             current_Long = search_res['flightInfo']['long']
             
