@@ -89,15 +89,22 @@ class ArealPosition(PlaneInfo):
 
     def decodeData(self, msg, ref_lat, ref_long, host):
         '''
-            decoding Areal Position message
-            \n current_lat, currnet_long
+            \ndecoding Areal Position message
+            \ncurrent_lat, currnet_long
         '''
         
         msg_icao = pms.adsb.icao(msg[0])
         alt = pms.adsb.altitude(msg[0])
-        new_lt, new_ln = pms.adsb.airborne_position_with_ref( msg[0], ref_lat, ref_long)
         
-        self.databaseHandler([ msg_icao, new_lt, new_ln, alt,[msg[0],msg[1]] ], host)
+        # decoding position by reference using even messages
+        if pms.adsb.oe_flag(msg[0]) == 0: # for even oe flag
+            new_lt, new_ln = pms.adsb.airborne_position_with_ref( msg[0], ref_lat, ref_long)
+            self.databaseHandler([ msg_icao, new_lt, new_ln, alt,[msg[0],msg[1]] ], host)
+
+        # new_lt, new_ln = pms.adsb.airborne_position_with_ref( msg[0], ref_lat, ref_long)
+        # self.databaseHandler([ msg_icao, new_lt, new_ln, alt,[msg[0],msg[1]] ], host)
+        
+        
 
     def databaseHandler(self, data, host):
         self.db_Handler.updateAerealPos(data, host)

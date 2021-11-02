@@ -9,5 +9,6 @@ class Config(object):
         # dialect+driver://username:password@host:port/database
         
     
-
+    
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    DEBUG = True

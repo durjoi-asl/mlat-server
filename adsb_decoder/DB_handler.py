@@ -176,7 +176,7 @@ class mongoDBClass:
     #     pass
     def updateAerealPos(self, data, host):
         '''
-            updates areal position of an existing airplane in the DB
+            \n updates areal position of an existing airplane in the DB
             \n data param receives a list => [icao, decoded_new_lat, decoded_new_long, alt,[hexcode,timestamp]]
             \n updates areal position of an existing airplane in the DB
             \n parms => (data, host); data=[icao, new_lat, new_long, altitude]
@@ -206,10 +206,40 @@ class mongoDBClass:
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.prevPos.lat": current_Lat}})
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.prevPos.long": current_Long}})
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.altitude":data[3]}}) #data[3]==altitude
-            self.updateHexCodeAndTstamp(data[0], data[4][0], data[4][1]) #data[4][0]==signal hexcode, data[4][0]==signal timestamp
+
+            #the below code updates odd and even frames
+            if pms.adsb.oe_flag(data[4][0]) == 0: # even frame
+                self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.even_frame": [data[4][0], data[4][1]]  }}) #data[4][0]==signal hexcode, data[4][1]==signal timestamp
+            elif pms.adsb.oe_flag(data[4][0]) == 1: # odd frame
+                self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.odd_frame": [data[4][0], data[4][1]]  }}) #data[4][0]==signal hexcode, data[4][1]==signal timestamp
+            
+            # Globally unambigious position decoding starts here
+            # if (self.adsb_collection.find({ "icao":data[0] })[0]["flightInfo"]["lat"] == None and self.adsb_collection.find({ "icao":data[0] })[0]["flightInfo"]["long"] == None) and self.adsb_collection.find({ "icao":data[0] })[0]["flightInfo"]["odd_frame"] != None and self.adsb_collection.find({ "icao":data[0] })[0]["flightInfo"]["even_frame"] != None:
+            #     # an Icao's lat OR long doesn't exist AND the Icao's odd and even frame exists then calculate globally unambigious position
+                
+            #     odd = self.adsb_collection.find_one({"icao":data[0]})["flightInfo"]["odd_frame"]
+            #     even = self.adsb_collection.find_one({"icao":data[0]})["flightInfo"]["even_frame"]
+                
+            #     pos = pms.adsb.position(even[0], odd[0], even[1], odd[1])
+            #     #update position
+            #     self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.lat": pos[0]}})
+            #     self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.long": pos[1]}})
+
+            #     #remove odd and even frames
+            #     self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.even_frame": None  }}) # set even frame to None
+            #     self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.odd_frame": None  }}) # set odd frame to None
+            
+            # elif self.adsb_collection.find({ "icao":data[0] })[0]["flightInfo"]["lat"] != None and  self.adsb_collection.find({ "icao":data[0] })[0]["flightInfo"]["long"] != None and pms.adsb.oe_flag(data[4][0]) == 0:
+            #     # if  lat and long already exists then take that as reference point, the msg should also be even
+            #     pos = pms.adsb.position_with_ref(data[4][0], self.adsb_collection.find_one({"icao":data[0]})["flightInfo"]["lat"], self.adsb_collection.find_one({"icao":data[0]})["flightInfo"]["long"])
+
+
+            self.updateHexCodeAndTstamp(data[0], data[4][0], data[4][1]) #data[4][0]==signal hexcode, data[4][1]==signal timestamp
             self.updateDecodedHex(data[0], data[4][0])
+            
             # self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"raw.signal.hexcode":data[4][0]}}) #data[4][0]==signal hsexcode
             # self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"raw.signal.timestamp":data[4][1]}}) #data[4][0]==signal timestamp
+            
             if current_Lat != None:
                 # calculate angle and make entry only if current_lat(ie previous lat now) exists
                 newAngle = self.angleFromCoordinate(current_Lat, current_Long, data[1], data[2])
