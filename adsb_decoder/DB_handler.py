@@ -192,8 +192,11 @@ class mongoDBClass:
         # print("$$$$$$ DATA $$$$$$$$")
         
         # if search_res != None and list(self.adsb_collection.find({"icao":data[0]},{"_id":0, "host":1}))[0]["host"]==host :
+            # older condition, don't remember why its not used anymore but saved for reference later
         if self.adsb_collection.find_one({"icao":data[0]}) != None and list(self.adsb_collection.find({"icao":data[0]}))[0]["host"]==host :
-            # update data if icao entry already exists
+            # update data if icao entry already exists and host matches the host of 
+        # if self.adsb_collection.find_one({"icao":data[0]}) != None  :
+        #     # update data if icao entry already exists
             print('Update areal data ==========')
             search_res = self.adsb_collection.find_one({"icao":data[0]})
             current_Lat = search_res['flightInfo']['lat']

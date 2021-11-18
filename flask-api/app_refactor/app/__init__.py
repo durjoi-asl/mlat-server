@@ -25,6 +25,7 @@ try: # establishing mongoDB connection
         serverSelectionTimeoutMS = 2000
         )
     adsb_collection = mongo["planeInfo"]["ADS-B"]
+    historic_collection = mongo["planeInfo"]["flightHistory"]
     mongo.server_info() # triggers exception if DB connection can't be established
     print("[SUCCESS]: mongo-DB connection established")
 except:

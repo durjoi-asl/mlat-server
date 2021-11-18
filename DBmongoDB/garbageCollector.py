@@ -13,7 +13,8 @@ from bson.json_util import dumps
 
 # from DB_handler import getAllData
 
-
+def deleteDircraft(icao):
+    pass
 
 def removeSignalLessPlanes():
     '''

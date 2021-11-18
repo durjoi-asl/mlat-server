@@ -1,0 +1,22 @@
+{
+  "apps": [
+    {
+      "name": "MLAT TcpClient",
+      "cwd": "/home/saadat/Desktop/task/mlat-server-master/TcpClient",
+      "script": "TcpClient.py",
+      "interpreter": "/home/saadat/Desktop/task/mlat_env/bin/python3"
+    },
+    {
+      "name": "MLAT Garbage Collector",
+      "cwd": "/home/saadat/Desktop/task/mlat-server-master/DBmongoDB",
+      "script": "garbageCollector.py",
+      "interpreter": "/home/saadat/Desktop/task/mlat_env/bin/python3"
+    },
+    {
+      "name": "MLAT Historic data Collector",
+      "cwd": "/home/saadat/Desktop/task/mlat-server-master/DBmongoDB",
+      "script": "historyDataCollector.py",
+      "interpreter": "/home/saadat/Desktop/task/mlat_env/bin/python3"
+    }
+  ]
+}

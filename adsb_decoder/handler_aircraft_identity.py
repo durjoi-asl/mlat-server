@@ -16,6 +16,7 @@ def create_new_aircraft_object(data, host, TIME_FORMAT):
             "identity":{
                 "category":data[1],
                 "callsign":data[2],
+                "CA":getCA(data[4][0]),
                 "typecode":data[3],
                 "aircraftType": aircraftType[0],
                 "aircraftTypeId": aircraftType[1]

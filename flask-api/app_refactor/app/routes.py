@@ -7,7 +7,7 @@ import jwt
 from bson.json_util import dumps
 
 from app.models import Users, Permission, Role, sqlDB
-from app import adsb_collection
+from app import adsb_collection, historic_collection
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
 import uuid
@@ -133,6 +133,27 @@ def getAllPlanes():
 
     return Response( # returning the json data required
         response=dmps,
+        status=200,
+        mimetype='application/json'
+    )
+
+@app.route("/polyLine/<msg_icao>/", methods=["GET"])
+def getPolyLine(msg_icao):
+    polyLine = historic_collection.aggregate(
+        [
+            {"$match":{"icao":msg_icao}},
+            {
+                "$project":{
+                "_id": "$icao",
+                "polyLine": "$polyLines",
+                "altitude": "$alt"    
+                }
+            }
+        ]
+    )
+
+    return  Response(
+        response=dumps(polyLine), 
         status=200,
         mimetype='application/json'
     )
