@@ -41,7 +41,7 @@ def removeSignalLessPlanes():
         diff = (time_now-timeStamp).total_seconds()
         data_icao = planeData['icao']
 
-        print(diff)
+        print("diff",diff)
         if diff > 120:
             print("MUST DELETE: ", planeData["icao"])
             adsb_collection.find_one_and_delete({"icao":data_icao})

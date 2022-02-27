@@ -98,6 +98,11 @@ class ArealPosition(PlaneInfo):
         
         # decoding position by reference using even messages
         if pms.adsb.oe_flag(msg[0]) == 0: # for even oe flag
+            print("even frame")
+            new_lt, new_ln = pms.adsb.airborne_position_with_ref( msg[0], ref_lat, ref_long)
+            self.databaseHandler([ msg_icao, new_lt, new_ln, alt,[msg[0],msg[1]] ], host)
+        elif pms.adsb.oe_flag(msg[0]) == 1:
+            print("odd frame")
             new_lt, new_ln = pms.adsb.airborne_position_with_ref( msg[0], ref_lat, ref_long)
             self.databaseHandler([ msg_icao, new_lt, new_ln, alt,[msg[0],msg[1]] ], host)
 
@@ -189,6 +194,7 @@ class PlaneInfoFactory:
                 plane.decodeData(msg, parm_lat, param_long, host)
                 # return ArealPosition()
             elif msgTC in  range(1,5): #identity typecode
+                print("identified")
                 plane = Idendity()
                 plane.decodeData(msg, parm_lat, param_long, host)
                 # return Idendity()

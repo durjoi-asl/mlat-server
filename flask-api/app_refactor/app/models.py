@@ -63,4 +63,3 @@ class Permission(sqlDB.Model):
 admin.add_view(ModelView(Users, sqlDB.session))
 admin.add_view(ModelView(Role, sqlDB.session))
 admin.add_view(ModelView(Permission, sqlDB.session))
- 

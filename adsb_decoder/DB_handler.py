@@ -55,16 +55,16 @@ class mongoDBClass:
         srch_res = self.adsb_collection.find_one({"icao":data[0]})
         if srch_res == None:
             self.createIdentityEntry(data, host)
+            print("created identified data")
         else:
+            print("update identified data")
             self.updateTimeStamp(data[0])
 
     def updateTimeStamp(self, icao): # complete this
         '''
             just updates the TimeStamp of the icao's data received
         '''
-        # plane = adsb_collection.find_one({{"icao":icao}})
-
-        pass
+        self.adsb_collection.update_one({"icao":icao}, {"$set":{"last_updated":datetime.datetime.now().strftime(self.TIME_FORMAT)}})
 
 
 
@@ -209,8 +209,9 @@ class mongoDBClass:
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.prevPos.lat": current_Lat}})
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.prevPos.long": current_Long}})
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.altitude":data[3]}}) #data[3]==altitude
+            self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"last_updated":datetime.datetime.now().strftime(self.TIME_FORMAT)}})
 
-            #the below code updates odd and even frames
+            #the below code updates odd and even frame(single)
             if pms.adsb.oe_flag(data[4][0]) == 0: # even frame
                 self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.even_frame": [data[4][0], data[4][1]]  }}) #data[4][0]==signal hexcode, data[4][1]==signal timestamp
             elif pms.adsb.oe_flag(data[4][0]) == 1: # odd frame
@@ -275,6 +276,8 @@ class mongoDBClass:
             
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"gndInfo.lat": data[1]}})
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"gndInfo.long": data[1]}})
+
+            self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"last_updated":datetime.datetime.now().strftime(self.TIME_FORMAT)}})
             
         elif list(self.adsb_collection.find({"icao":data[0]},{"_id":0, "host":1}))[0]["host"]==host:
             # position already exists  should implement locally ambigious position later
@@ -284,6 +287,8 @@ class mongoDBClass:
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"gndInfo.lat": data[1]}})
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"gndInfo.long": data[0]}})
         
+            self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"last_updated":datetime.datetime.now().strftime(self.TIME_FORMAT)}})
+
         self.updateHexCodeAndTstamp(data[0], data[3][0], data[3][1])  #data[3][0]==signal hexcode, data[3][0]==signal timestamp
         self.updateDecodedHex(data[0],data[3][0])
         
@@ -317,7 +322,7 @@ class mongoDBClass:
         lon2 = Math.radians(lon2)
         X = cos(lat2)*sin(dL)
         Y = cos(lat1)*sin(lat2) - sin(lat1)*cos(lat2)*cos(dL)
-        bearing = arctan2(X,Y)
+        bearing = arctan2(X,Y) # arctan means inverse of tan
         angleDeg = degrees(bearing)
         return angleDeg
 
@@ -346,6 +351,7 @@ class mongoDBClass:
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.velocity.speed": data[1][0]}})
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.velocity.magHeading": data[1][1]}})
             self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"flightInfo.velocity.verticalSpeed": data[1][2]}})
+            self.adsb_collection.update_one({"icao":data[0]}, {"$set":{"last_updated":datetime.datetime.now().strftime(self.TIME_FORMAT)}})
             self.updateHexCodeAndTstamp(data[0], data[2][0], data[2][1])
             self.updateDecodedHex(data[0], data[2][0])
             # self.updateRawDecodedMsg(data[0], data[2][0] )

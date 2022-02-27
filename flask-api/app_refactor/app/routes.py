@@ -1,3 +1,4 @@
+from nis import match
 from app import app
 
 from functools import wraps
@@ -43,7 +44,7 @@ def token_required(f): #decorator for authorization, login
     
     return decorated
     
-def authRBAC(roles,levels, permissions):
+def authRBAC(roles, levels, permissions):
     '''
         params= ( [roles list], [levels list], [permissions list] )
 
@@ -55,16 +56,29 @@ def authRBAC(roles,levels, permissions):
         @wraps(f)
         def decorated(*args, **kwargs):
             accessMsg = {'accessableFor':{'roles': roles,'levels':levels ,'permissions': permissions}}
-            token = request.args.get('token')
+            data = request.get_json()
+            token = data['token']
+            have_permission = False
 
             if not token:
                 return jsonify({'error': 'Token is missing', 'accessFor':accessMsg['accessableFor'] }), 403
             try:
-                data = jwt.decode(token, app.config['SECRET_KEY'])
+                data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+                current_user = Users.query.filter_by(public_id=data['public_id']).first()
+
+                user_roles = []
+                for role in current_user.roles:
+                    user_roles.append(role.role)
+
+                matched_permission = list(set(roles).intersection(user_roles))
+                print("roles matched: ", list(set(roles).intersection(user_roles)))
+                
+                if len(matched_permission)>0:
+                    have_permission = True
             except:
                 return jsonify({'error': 'Token is invalid'}), 403
 
-            return f(*args, **kwargs)       
+            return f(current_user, have_permission, *args, **kwargs)       
         return decorated  
     return innerRBAC
 
@@ -207,9 +221,10 @@ def getIcaoPlane(msg_icao):
 @cross_origin(supports_credentials=True)
 @token_required
 def testAuth(current_user):
+    # print("current user", current_user.name)
+    # return jsonify({"message":"this user is authenticated"})
     user = {
         "name":current_user.name,
-        "admin":current_user.roles[0],
         "password":"woops you didn't think you'll be able to see this did you? :p"
     }
     return jsonify({"testAPI":"testing", "authoriaztion":"working properly","user who called this":user})
@@ -230,21 +245,21 @@ def testAuthRole(current_user):
 
 @app.route('/test/rbac') #finish this
 @cross_origin(supports_credentials=True)
-@authRBAC(roles=["cook", "baburchi"],levels=[0], permissions=["all", "restricted", "wow"])
-def testAuthRbac(current_user):
-    # print(current_user)
-    if current_user.role == 2:
-        user = {
-            "name":current_user.name,
-            "admin":current_user.admin,
-            "role" : current_user.role,
-            "password":"woops you didn't think you'll be able to see this did you? :p"
-        }
+@authRBAC(roles=["admin", "baburchi"],levels=[0], permissions=["all", "restricted", "wow"])
+def testAuthRbac(current_user, have_permission):
+
+    user = {
+        "name":current_user.name,
+        "have_permission":have_permission,
+
+        "password":"woops you didn't think you'll be able to see this did you? :p"
+    }
     return jsonify({"testAPI":"testing roles", "authoriaztion":"working properly","user who called this":user})
 
 @app.route("/user/", methods=["GET"]) ## implement authorization and authentication to show all users 
 @cross_origin(supports_credentials=True)
 def get_all_users():
+    print("get all user")
     users = Users.query.all()
     output = []
 
@@ -253,7 +268,6 @@ def get_all_users():
         user_data['public_id'] = user.public_id
         user_data['name'] = user.name
         user_data['password'] = user.password
-        user_data['admin'] = user.admin
         user_data['roles'] = user.roles
 
         output.append(user_data)
@@ -327,7 +341,7 @@ def sign_up():
     data = request.get_json()
     hashed_password = generate_password_hash(data['password'], method='sha256')
 
-    new_user = Users(public_id=str(uuid.uuid4()), name=data['name'], password=hashed_password, admin=False, role=0)
+    new_user = Users(public_id=str(uuid.uuid4()), name=data['name'], password=hashed_password)
     sqlDB.session.add(new_user)
     sqlDB.session.commit()
     return jsonify({'message':'new user created', "name":data['name'] })

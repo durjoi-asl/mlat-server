@@ -28,6 +28,7 @@ class MongoConnectionSingleton(IMongoConnection):
             #creating client/cluster 
             self.name = name
             MongoConnectionSingleton.__cluster_instance = MongoClient()["planeInfo"]["ADS-B"] #client = MongoClient('localhost', 27017)
+            print("mongo created")
     
     @staticmethod
     def get_connection():

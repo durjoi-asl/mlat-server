@@ -1,3 +1,4 @@
+from operator import indexOf
 import sys 
 sys.path.append("..")
 
@@ -110,21 +111,21 @@ class TcpClient():
                         
                         
                 # All Call Reply - Mode S short 14 byte
-                if(df == 11):
-                    icao = pms.adsb.icao(msg[0])
-                    if icao in DF_11.keys():
-                        DF_11[icao]["msg"] = msg[0]
-                        DF_11[icao][str(workerId)+"x"+str(DF_11[icao]["id"] + 1)] = msg[1]
-                        DF_11[icao]["id"] = DF_11[icao]["id"] + 1
-                        # print(f"{icao} {DF_11[icao]}")
-                        # print(ALL_MESSAGES.keys())
-                    else: 
-                        DF_11[icao] = {}
-                        DF_11[icao]["id"] = 0
-                        DF_11[icao]["msg"] = msg[0]
-                        DF_11[icao][str(workerId)+"x"+str(DF_11[icao]["id"] + 1)] = msg[1]
-                        DF_11[icao]["id"] = DF_11[icao]["id"] + 1
-                        DF_11[icao]["icao"] = icao
+                # if(df == 11):
+                #     icao = pms.adsb.icao(msg[0])
+                #     if icao in DF_11.keys():
+                #         DF_11[icao]["msg"] = msg[0]
+                #         DF_11[icao][str(workerId)+"x"+str(DF_11[icao]["id"] + 1)] = msg[1]
+                #         DF_11[icao]["id"] = DF_11[icao]["id"] + 1
+                #         # print(f"{icao} {DF_11[icao]}")
+                #         # print(ALL_MESSAGES.keys())
+                #     else: 
+                #         DF_11[icao] = {}
+                #         DF_11[icao]["id"] = 0
+                #         DF_11[icao]["msg"] = msg[0]
+                #         DF_11[icao][str(workerId)+"x"+str(DF_11[icao]["id"] + 1)] = msg[1]
+                #         DF_11[icao]["id"] = DF_11[icao]["id"] + 1
+                #         DF_11[icao]["icao"] = icao
                         # print(f"{icao} {DF_11[icao]}")
                        
 
@@ -137,6 +138,7 @@ class TcpClient():
         
         
         for process in self.workerList:
+            print("indexOf(process)", self.workerList.index(process))
             process.start()
             # process.join()
 
