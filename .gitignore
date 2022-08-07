@@ -5,6 +5,7 @@
 __pycache__/
 *.pyc
 *.vscode
+mlat_env
 
 ###########################################
 ##   Ignoring specific file types; csv   ##
