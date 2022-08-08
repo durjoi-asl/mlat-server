@@ -200,7 +200,7 @@ class PlaneInfoFactory:
                 # return Idendity()
             elif msgTC in range(5,9): #ground position
                 # plane = AirborneVelocity()
-                plane =GroundPosition
+                plane =GroundPosition()
                 plane.decodeData(msg, parm_lat, param_long, host)
                 # return GroundPosition()
             elif msgTC == 19: #airborne velocity

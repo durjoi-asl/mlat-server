@@ -43,7 +43,7 @@ MONGOPORT = 27017 # port of mondoDB hosting
 
 # FLASKHOST = "192.168.50.12" # address where flask server is hosted and is running
 FLASKHOST = "localhost"
-FLASKPORT = 5001 # port of flask hosting
+FLASKPORT = 9001 # port of flask hosting
 DEBUGTRUTH = True # whether in debug mode or not
 
 # app.secret_key = "amar secret" # NOT FOR PRODUCTION, JUST FOR TESTING
